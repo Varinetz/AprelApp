@@ -5,8 +5,6 @@
     tools:context="ru.apl_aprel.aprel.NewCalc"
     android:background="@color/colorPrimary700">
 
-    <!-- TODO: Update blank fragment layout -->
-
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
