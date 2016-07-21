@@ -31,20 +31,6 @@
         android:layout_marginBottom="20dp"
         android:hint="Имя" />
 
-    <!--<EditText-->
-        <!--android:layout_width="fill_parent"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:inputType="date"-->
-        <!--android:ems="10"-->
-        <!--android:id="@+id/input_date"-->
-        <!--android:layout_below="@+id/input_name"-->
-        <!--android:layout_centerHorizontal="true"-->
-        <!--android:layout_marginLeft="47dp"-->
-        <!--android:layout_marginRight="47dp"-->
-        <!--android:layout_marginTop="20dp"-->
-        <!--android:layout_marginBottom="20dp"-->
-        <!--android:hint="01.01.1970" />-->
-
     <DatePicker
         android:id="@+id/datePicker"
         android:layout_width="match_parent"
