@@ -1,0 +1,91 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="fill_parent"
+    tools:context="ru.apl_aprel.aprel.NewCalc"
+    android:background="@color/colorPrimary700">
+
+    <!-- TODO: Update blank fragment layout -->
+
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom"
+        android:layout_margin="@dimen/fab_margin"
+        android:src="@drawable/ic_done_white_24px1"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textPersonName"
+        android:ems="10"
+        android:id="@+id/input_name"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginLeft="47dp"
+        android:layout_marginRight="47dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp"
+        android:hint="Имя" />
+
+    <!--<EditText-->
+        <!--android:layout_width="fill_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:inputType="date"-->
+        <!--android:ems="10"-->
+        <!--android:id="@+id/input_date"-->
+        <!--android:layout_below="@+id/input_name"-->
+        <!--android:layout_centerHorizontal="true"-->
+        <!--android:layout_marginLeft="47dp"-->
+        <!--android:layout_marginRight="47dp"-->
+        <!--android:layout_marginTop="20dp"-->
+        <!--android:layout_marginBottom="20dp"-->
+        <!--android:hint="01.01.1970" />-->
+
+    <DatePicker
+        android:id="@+id/datePicker"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:calendarViewShown="false"
+        android:layout_below="@+id/input_name"
+        android:datePickerMode="spinner"
+        android:layout_marginBottom="20dp"/>
+
+    <Button
+        android:layout_width="170dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/datePicker"
+        android:text="Рассчитать"
+        android:id="@+id/calc_button"
+        android:layout_marginTop="22dp"
+        android:background="@color/colorAccent"
+        android:clickable="true"
+        android:elegantTextHeight="false"
+        android:enabled="true"
+        android:padding="10dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="22dp"
+        android:contextClickable="true"
+        android:textColor="#ffffff"
+        android:paddingLeft="100dp"
+        android:paddingRight="30dp"
+        android:layout_alignParentEnd="false"
+        android:layout_alignParentStart="false"
+        android:longClickable="false" />
+
+    <TextView
+        android:id="@+id/debugTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/calc_button"
+        android:text="Date here"
+        android:textAppearance="?android:attr/textAppearanceLarge"/>
+
+
+</RelativeLayout>

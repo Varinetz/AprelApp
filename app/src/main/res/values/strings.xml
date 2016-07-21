@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Aprel</string>
+    <string name="action_settings">Settings</string>
+    <string name="section_format">Hello World from section: %1$d</string>
+    <string name="new_calc_tab_name">Новый расчет</string>
+    <string name="saved_tab_name">Сохраненные</string>
+    <string name="title_activity_saved">saved</string>
+    <string name="title_activity_detail">Расчет</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>
