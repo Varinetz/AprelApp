@@ -8,6 +8,7 @@ import com.github.mikephil.charting.charts.LineChart;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 
@@ -479,6 +480,39 @@ public class Result extends AppCompatActivity {
 
         String ddggstring = String.valueOf(faithGraph);
         String invddggstring = String.valueOf(willGraph);
+        Calendar now = Calendar.getInstance();
+        int NowDate = now.get(Calendar.DATE);
+        int NowMonth = now.get(Calendar.MONTH) + 1;
+        int NowYear = now.get(Calendar.YEAR);
+        int age = 0;
+        int gg = result_year;
+
+
+        if (result_month < NowMonth)
+        {
+            age = NowYear - gg;
+
+        } // end if
+        if (result_month > NowMonth)
+        {
+            age = NowYear - result_year;
+
+        } // end if
+        if (!(result_day >= NowDate || result_month != NowMonth))
+        {
+            age = NowYear - gg;
+
+        } // end if
+        if (!(result_day != NowDate || result_month != NowMonth))
+        {
+            age = NowYear - gg;
+
+        } // end if
+        if (!(result_day <= NowDate || result_month != NowMonth))
+        {
+            age = NowYear - gg;
+
+        } // end if
 
         int X1 = 0;
         int X2 = 12;
@@ -495,6 +529,40 @@ public class Result extends AppCompatActivity {
         int Yr5 = -10 * Character.getNumericValue(ddggstring.charAt(4));
         int Yr6 = -10 * Character.getNumericValue(ddggstring.charAt(5));
         int Yr7 = -10 * Character.getNumericValue(ddggstring.charAt(6));
+        int Yr = 3561;
+
+
+        if (!(age < X1 || age > X2))
+        {
+            Yr = (Yr2 - Yr1) / (X2 - X1) * age + (Yr1 - (Yr2 - Yr1) / (X2 - X1) * X1);
+
+        } // end if
+        if (!(age < X2 || age > X3))
+        {
+            Yr = (Yr3 - Yr2) / (X3 - X2) * age + (Yr2 - (Yr3 - Yr2) / (X3 - X2) * X2);
+
+        } // end if
+        if (!(age < X3 || age > X4))
+        {
+            Yr = (Yr4 - Yr3) / (X4 - X3) * age + (Yr3 - (Yr4 - Yr3) / (X4 - X3) * X3);
+
+        } // end if
+        if (!(age < X4 || age > X5))
+        {
+            Yr = (Yr5 - Yr4) / (X5 - X4) * age + (Yr4 - (Yr5 - Yr4) / (X5 - X4) * X4);
+
+        } // end if
+        if (!(age < X5 || age > X6))
+        {
+            Yr = (Yr6 - Yr5) / (X6 - X5) * age + (Yr5 - (Yr6 - Yr5) / (X6 - X5) * X5);
+
+        } // end if
+        if (!(age < X6 || age > X7))
+        {
+            Yr = (Yr7 - Yr6) / (X7 - X6) * age + (Yr6 - (Yr7 - Yr6) / (X7 - X6) * X6);
+
+        } // end if
+        int Yr_out = Yr / -10;
 
         int Yb1 = -10 * Character.getNumericValue(invddggstring.charAt(0));
         int Yb2 = -10 * Character.getNumericValue(invddggstring.charAt(1));
@@ -552,11 +620,16 @@ public class Result extends AppCompatActivity {
 
         } // end if
         int Z4860 = (Yr6 - Yr5) / (X6 - X5) - (Yb6 - Yb5) / (X6 - X5);
-        if (Z4860 != 0)
-        {
-            X4860 = (Yb5 - X5 * ((Yb6 - Yb5) / (X6 - X5)) - (Yr5 - X5 * ((Yr6 - Yr5) / (X6 - X5)))) / ((Yr6 - Yr5) / (X6 - X5) - (Yb6 - Yb5) / (X6 - X5));
 
-        } // end if
+
+
+
+        X4860 = (Yb5 - X5 * ((Yb6 - Yb5) / (X6 - X5)) - (Yr5 - X5 * ((Yr6 - Yr5) / (X6 - X5)))) / ((Yr6 - Yr5) / (X6 - X5) - (Yb6 - Yb5) / (X6 - X5));
+
+
+
+
+
         int Z6072 = (Yr7 - Yr6) / (X7 - X6) - (Yb7 - Yb6) / (X7 - X6);
         if (Z6072 != 0)
         {
@@ -687,11 +760,5 @@ public class Result extends AppCompatActivity {
         } // end if
 
         // Показываем пересечения
-        testTextArea.append("\n Прсч: " + T0012 + Z0012);
-        testTextArea.append("\n Прсч: " + T1224 + Z1224);
-        testTextArea.append("\n Прсч: " + T2436 + Z2436);
-        testTextArea.append("\n Прсч: " + T3648 + Z3648);
-        testTextArea.append("\n Прсч: " + T4860 + Z4860);
-        testTextArea.append("\n Прсч: " + T6072 + Z6072);
     }
 }
