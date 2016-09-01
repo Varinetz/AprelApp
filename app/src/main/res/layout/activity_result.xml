@@ -40,10 +40,17 @@
             android:layout_height="wrap_content"
             android:padding="20dp">
 
-            <com.github.mikephil.charting.charts.LineChart
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="200dp">
+
+                <com.github.mikephil.charting.charts.LineChart
                 android:id="@+id/chartGraph"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
+
+            </FrameLayout>
+
 
             <!--<view-->
                 <!--android:layout_width="match_parent"-->

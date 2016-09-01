@@ -1,15 +1,25 @@
 package ru.apl_aprel.aprel;
 
+import android.graphics.Color;
+import android.graphics.Point;
+import android.graphics.PointF;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 //import im.dacer.androidcharts.LineView;
 
@@ -53,50 +63,70 @@ public class Result extends AppCompatActivity {
         return graphNums;
     }
 
-    public ArrayList findChartCross(ArrayList will, ArrayList faith, ArrayList years) {
-        ArrayList<ArrayList> crosses = new ArrayList<ArrayList>();
+
+    public PointF intersectionPoint(
+            int x1,int y1,int x2,int y2,
+            int x3, int y3, int x4,int y4
+    ) {
+        // if the lines intersect, the result contains the x and y of the intersection (treating the lines as infinite) and booleans for whether line segment 1 or line segment 2 contain the point
+        float denominator, a, b, numerator1, numerator2, x, y;
+        boolean onLine1 = false;
+        boolean onLine2 = false;
+        PointF intrsctn = new PointF();
+
+        denominator = ((y4 - y3) * (x2 - x1)) - ((x4 - x3) * (y2 - y1));
+        if (denominator == 0) {
+            return null;
+        }
+        a = y1 - y3;
+        b = x1 - x3;
+        numerator1 = ((x4 - x3) * a) - ((y4 - y3) * b);
+        numerator2 = ((x2 - x1) * a) - ((y2 - y1) * b);
+        a = numerator1 / denominator;
+        b = numerator2 / denominator;
+
+        // if we cast these lines infinitely in both directions, they intersect here:
+        x = x1 + (a * (x2 - x1));
+        y = y1 + (a * (y2 - y1));
+        intrsctn.set(x, y); //result x,y
+/*
+        // it is worth noting that this should be the same as:
+        x = x3 + (b * (x4 - x3));
+        y = x3 + (b * (y4 - y3));
+        */
+        // if line1 is a segment and line2 is infinite, they intersect if:
+        if (a > 0 && a < 1) {
+            onLine1 = true;
+        }
+        // if line2 is a segment and line1 is infinite, they intersect if:
+        if (b > 0 && b < 1) {
+            onLine2 = true;
+        }
+        // if line1 and line2 are segments, they intersect if both of the above are true
+
+        if (!onLine1 && !onLine2) {
+            return null;
+        }
+        return intrsctn;
+    }
+
+    public ArrayList findChartCross(ArrayList will, ArrayList faith, ArrayList<Integer> years) {
+        ArrayList<PointF> crosses = new ArrayList<>();
 
 
-        for (Integer i = 0; i < years.size() - 1; i++) {
+        for (int i = 0; i < years.size() - 1; i++) {
+            ArrayList<Integer> ddd = new ArrayList<>();
+            int startX = years.get(i); //P1x, G1x
+            int endX = years.get(i+1); //P2x, G2x
 
-            Integer startX = years.indexOf(i); //P1x, G1x
-            Integer endX = years.indexOf(i+1); //P2x, G2x
+            int willStartY = will.indexOf(i); //P1y
+            int willEndY = will.indexOf(i+1); //P2y
 
-            Integer willStartY = will.indexOf(i); //P1y
-            Integer willEndY = will.indexOf(i+1); //P2y
+            int faithStartY = faith.indexOf(i); //G1y
+            int faithEndY = faith.indexOf(i+1); //G2y
 
-            Integer faithStartY = faith.indexOf(i); //G1y
-            Integer faithEndY = faith.indexOf(i+1); //G2y
-
-            Integer Ax = willStartY - willEndY;
-            Integer Bx = startX - endX;
-            Integer Cx = endX * willStartY - startX * willEndY;
-            Integer Ay = faithStartY - faithEndY;
-            Integer By = endX - startX;
-            Integer Cy = endX * faithStartY - startX * faithEndY;
-
-            Integer crossYDenominatorsDenominator = Ax+By;
-            if(crossYDenominatorsDenominator != 0) {
-                ArrayList<Integer> crossPoint = new ArrayList<>();
-                crossPoint.add(1);
-                crossPoint.add(2);
-                crosses.add(crossPoint);
-
-                Integer crossYDenominator = Ay*Bx / crossYDenominatorsDenominator;
-
-                if(crossYDenominator != 0 && Ax != 0) {
-
-                    Integer crossY = (Cy-(Ay*Cx)/Ax) / crossYDenominator;
-                    Integer crossX = (Cx+Bx*crossY) / Ax;
-
-//                    if(startX <= crossX && crossX <= endX) {
-//                        ArrayList<Integer> crossPoint = new ArrayList<>();
-//                        crossPoint.add(crossX);
-//                        crossPoint.add(crossY);
-//                        crosses.add(crossPoint);
-//                    }
-                }
-            }
+            PointF intersectionP = intersectionPoint(startX, willStartY, endX, willEndY, startX, faithStartY, endX, faithEndY);
+            crosses.add(intersectionP);
         }
 
         return crosses;
@@ -259,17 +289,18 @@ public class Result extends AppCompatActivity {
 
         // График
 
-        ArrayList faithChartVal = fillChart(result_day, result_month, result_year, false);
-        ArrayList willChartVal = fillChart(result_day, result_month, result_year, true);
-        ArrayList<Integer> yearsForChart = new ArrayList<Integer>();
+        ArrayList<Integer> faithChartVal = fillChart(result_day, result_month, result_year, false);
+        ArrayList<Integer> willChartVal = fillChart(result_day, result_month, result_year, true);
+        ArrayList<Integer> yearsForChart = new ArrayList<>();
         for (int i=0; i<=72; i+=12){
             yearsForChart.add(i);
         }
 
         ArrayList crossPoints = findChartCross(willChartVal, faithChartVal, yearsForChart);
 
-            testTextArea.append("\n Пересечение: " + crossPoints.size());
-
+        testTextArea.append("\n Пересечение: " + crossPoints.size());
+        testTextArea.append("\n Точечки: " + Arrays.toString(crossPoints.toArray()));
+        testTextArea.append("\n Годы: " + Arrays.toString(yearsForChart.toArray()));
 
         ArrayList<ArrayList<Integer>> bothGraph = new ArrayList<ArrayList<Integer>>();
         bothGraph.add(faithChartVal);
@@ -280,7 +311,57 @@ public class Result extends AppCompatActivity {
 
         LineChart chart = (LineChart) findViewById(R.id.chartGraph);
 
-//        final LineView lineView = (LineView) findViewById(R.id.line_viewGraph);
+        List<Entry> faithPoints = new ArrayList<>();
+        List<Entry> willPoints = new ArrayList<>();
+
+        for(int i=0; i < yearsForChart.size(); i++) {
+            faithPoints.add(new Entry(yearsForChart.get(i), faithChartVal.get(i)));
+            willPoints.add(new Entry(yearsForChart.get(i), willChartVal.get(i)));
+        }
+
+
+
+
+        LineDataSet faithDataSet = new LineDataSet(faithPoints, "Судьба"); // add entries to dataset
+        faithDataSet.setColor(Color.YELLOW);
+        faithDataSet.setValueTextColor(Color.WHITE);
+        faithDataSet.setDrawValues(false);
+        faithDataSet.setCircleColor(Color.YELLOW);
+        faithDataSet.setCircleColorHole(R.color.colorPrimaryDark);
+
+        LineDataSet willDataSet = new LineDataSet(willPoints, "Воля"); // add entries to dataset
+        willDataSet.setColor(Color.GREEN);
+        willDataSet.setValueTextColor(Color.WHITE);
+        willDataSet.setDrawValues(false);
+        willDataSet.setCircleColor(Color.GREEN);
+        willDataSet.setCircleColorHole(R.color.colorPrimaryDark);
+
+        List<ILineDataSet> dataSets = new ArrayList<ILineDataSet>();
+        dataSets.add(faithDataSet);
+        dataSets.add(willDataSet);
+
+        LineData FinalChart = new LineData(dataSets);
+
+        chart.setData(FinalChart);
+        chart.setDescription("График судьбы и воли");
+        chart.setDescriptionColor(Color.WHITE);
+        chart.setTouchEnabled(false);
+        chart.animateXY(100, 100);
+
+        YAxis leftAxis = chart.getAxisLeft();
+        leftAxis.setTextColor(Color.WHITE);
+        leftAxis.setTextSize(14f);
+
+        YAxis rightAxis = chart.getAxisRight();
+        rightAxis.setTextColor(Color.WHITE);
+        rightAxis.setTextSize(14f);
+
+        XAxis bttmAxis = chart.getXAxis();
+        bttmAxis.setTextColor(Color.WHITE);
+        bttmAxis.setTextSize(14f);
+        bttmAxis.setGranularity(12f);
+
+        chart.invalidate();
 //
 //        //must*
 //        ArrayList<String> test = new ArrayList<String>();
