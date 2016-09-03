@@ -1,14 +1,17 @@
 package ru.apl_aprel.aprel;
 
+import android.content.ContentValues;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
-import android.graphics.Point;
 import android.graphics.PointF;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
+import android.view.View;
 import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
@@ -20,8 +23,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-//import im.dacer.androidcharts.LineView;
 
 public class Result extends AppCompatActivity {
 
@@ -110,22 +111,21 @@ public class Result extends AppCompatActivity {
         return intrsctn;
     }
 
-    public ArrayList findChartCross(ArrayList will, ArrayList faith, ArrayList<Integer> years) {
+    public ArrayList findChartCross(ArrayList<Integer> will, ArrayList<Integer> faith, ArrayList<Integer> years) {
         ArrayList<PointF> crosses = new ArrayList<>();
 
 
         for (int i = 0; i < years.size() - 1; i++) {
-            ArrayList<Integer> ddd = new ArrayList<>();
             int startX = years.get(i); //P1x, G1x
             int endX = years.get(i+1); //P2x, G2x
 
-            int willStartY = will.indexOf(i); //P1y
-            int willEndY = will.indexOf(i+1); //P2y
+            int willStartY = will.get(i); //P1y
+            int willEndY = will.get(i+1); //P2y
 
-            int faithStartY = faith.indexOf(i); //G1y
-            int faithEndY = faith.indexOf(i+1); //G2y
+            int faithStartY = faith.get(i); //G1y
+            int faithEndY = faith.get(i+1); //G2y
 
-            PointF intersectionP = intersectionPoint(startX, willStartY, endX, willEndY, startX, faithStartY, endX, faithEndY);
+            PointF intersectionP = intersectionPoint(startX, faithStartY, endX, faithEndY, startX, willStartY, endX, willEndY);
             crosses.add(intersectionP);
         }
 
@@ -135,14 +135,13 @@ public class Result extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
-        int result_day = getIntent().getIntExtra("result_day", 0);
-        int result_month = getIntent().getIntExtra("result_month", 0);
-        int result_year = getIntent().getIntExtra("result_year", 0);
-//
-//        int result_day = 01;
-//        int result_month = 12;
-//        int result_year = 1970;
-        String result_name = getIntent().getStringExtra("result_name");
+        final String result_name = getIntent().getStringExtra("result_name");
+        final String result_surname = getIntent().getStringExtra("result_surname");
+        final String result_occupation = getIntent().getStringExtra("result_occupation");
+        final int result_day = getIntent().getIntExtra("result_day", 0);
+        final int result_month = getIntent().getIntExtra("result_month", 0);
+        final int result_year = getIntent().getIntExtra("result_year", 0);
+
         TextView testTextArea;
 
         super.onCreate(savedInstanceState);
@@ -328,6 +327,7 @@ public class Result extends AppCompatActivity {
         faithDataSet.setDrawValues(false);
         faithDataSet.setCircleColor(Color.YELLOW);
         faithDataSet.setCircleColorHole(R.color.colorPrimaryDark);
+        faithDataSet.setLineWidth(3f);
 
         LineDataSet willDataSet = new LineDataSet(willPoints, "Воля"); // add entries to dataset
         willDataSet.setColor(Color.GREEN);
@@ -335,6 +335,7 @@ public class Result extends AppCompatActivity {
         willDataSet.setDrawValues(false);
         willDataSet.setCircleColor(Color.GREEN);
         willDataSet.setCircleColorHole(R.color.colorPrimaryDark);
+        willDataSet.setLineWidth(3f);
 
         List<ILineDataSet> dataSets = new ArrayList<ILineDataSet>();
         dataSets.add(faithDataSet);
@@ -344,6 +345,7 @@ public class Result extends AppCompatActivity {
 
         chart.setData(FinalChart);
         chart.setDescription("График судьбы и воли");
+        chart.setDescriptionTextSize(14f);
         chart.setDescriptionColor(Color.WHITE);
         chart.setTouchEnabled(false);
         chart.animateXY(100, 100);
@@ -351,28 +353,53 @@ public class Result extends AppCompatActivity {
         YAxis leftAxis = chart.getAxisLeft();
         leftAxis.setTextColor(Color.WHITE);
         leftAxis.setTextSize(14f);
+        leftAxis.setGranularity(1f);
+        //leftAxis.setLabelCount(6, true); // force 6 labels
 
         YAxis rightAxis = chart.getAxisRight();
         rightAxis.setTextColor(Color.WHITE);
         rightAxis.setTextSize(14f);
+        rightAxis.setGranularity(1f);
 
         XAxis bttmAxis = chart.getXAxis();
         bttmAxis.setTextColor(Color.WHITE);
         bttmAxis.setTextSize(14f);
         bttmAxis.setGranularity(12f);
+        bttmAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        bttmAxis.setAvoidFirstLastClipping(true);
+
+        // Легенда
+
+        Legend l = chart.getLegend();
+        l.setFormSize(10f); // set the size of the legend forms/shapes
+        l.setForm(Legend.LegendForm.LINE); // set what type of form/shape should be used
+        l.setPosition(Legend.LegendPosition.BELOW_CHART_LEFT);
+        l.setTextSize(12f);
+        l.setTextColor(Color.WHITE);
+        l.setXEntrySpace(5f); // set the space between the legend entries on the x-axis
+        l.setYEntrySpace(5f); // set the space between the legend entries on the y-axis
 
         chart.invalidate();
-//
-//        //must*
-//        ArrayList<String> test = new ArrayList<String>();
-//        for (int i=0; i<=72; i+=12){
-//            test.add(String.valueOf(i));
-//        }
-//        lineView.setBottomTextList(test);
-//        lineView.setDataList(bothGraph);
-//        lineView.setDrawDotLine(false);
-//        lineView.setShowPopup(LineView.SHOW_POPUPS_NONE);
-//
-//        lineView.setDataList(bothGraph);
+
+        // Сохраняем данные
+
+        FloatingActionButton result_save = (FloatingActionButton) findViewById(R.id.result_save);
+
+        result_save.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                DbHelper dbOpenHelper = new DbHelper(Result.this);
+                SQLiteDatabase db = dbOpenHelper.getWritableDatabase();
+                ContentValues cv = new ContentValues();
+                cv.put(DbHelper.NAME, result_name);
+                cv.put(DbHelper.SURNAME, result_surname);
+                cv.put(DbHelper.OCCUPATION, result_occupation);
+                cv.put(DbHelper.DAY, result_day);
+                cv.put(DbHelper.MONTH, result_month);
+                cv.put(DbHelper.YEAR, result_year);
+
+                db.insert(DbHelper.TABLE_NAME,null,cv);
+                db.close();
+            }
+        });
     }
 }
