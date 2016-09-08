@@ -1,6 +1,7 @@
 package ru.apl_aprel.aprel;
 
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -10,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import java.util.Calendar;
 /**
@@ -45,7 +47,7 @@ public class NewCalc extends Fragment {
                              Bundle savedInstanceState) {
         final View root = inflater.inflate(R.layout.fragment_new_calc, container, false);
 
-        final Intent intent = new Intent(getActivity(), Result.class);
+        final Intent resultIntent = new Intent(getActivity(), Result.class);
 
         root.findViewById(R.id.calc_button);
 
@@ -61,13 +63,21 @@ public class NewCalc extends Fragment {
 
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
-                intent.putExtra("result_name", result_name.getText().toString());
-                intent.putExtra("result_name", result_surname.getText().toString());
-                intent.putExtra("result_name", result_occupation.getText().toString());
-                intent.putExtra("result_day", mDatePicker.getDayOfMonth()  );
-                intent.putExtra("result_month", mDatePicker.getMonth() + 1);
-                intent.putExtra("result_year", mDatePicker.getYear() );
-                startActivity(intent);
+                resultIntent.putExtra("result_day", mDatePicker.getDayOfMonth()  );
+                resultIntent.putExtra("result_month", mDatePicker.getMonth() + 1);
+                resultIntent.putExtra("result_year", mDatePicker.getYear() );
+
+                if (result_name != null && result_name.getText().toString().length()>0 || result_surname != null && result_surname.getText().toString().length()>0) {
+                    resultIntent.putExtra("result_name", result_name.getText().toString());
+                    resultIntent.putExtra("result_surname", result_surname.getText().toString());
+                    resultIntent.putExtra("result_occupation", result_occupation.getText().toString());
+                    resultIntent.putExtra("correct_form", true);
+                } else {
+                    resultIntent.putExtra("correct_form", false);
+                    Context ctx = getActivity().getApplicationContext();
+                    Toast.makeText(ctx, "Чтобы сохранить, вернитесь назад и заполните имя", Toast.LENGTH_LONG).show();
+                }
+                startActivity(resultIntent);
             }
         });
 

@@ -1,15 +1,29 @@
 package ru.apl_aprel.aprel;
 
 import android.content.ContentValues;
+import android.content.Context;
+import android.content.Intent;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.PointF;
+import android.graphics.PorterDuff;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
+import android.widget.TableLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
@@ -18,6 +32,7 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
+import com.github.mikephil.charting.utils.ColorTemplate;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,6 +40,8 @@ import java.util.Collections;
 import java.util.List;
 
 public class Result extends AppCompatActivity {
+    /* Menu */
+    /* Menu END */
 
     public int getSumOfStrChars(String str) {
         int[] strArr = new int[str.length()];
@@ -141,11 +158,25 @@ public class Result extends AppCompatActivity {
         final int result_day = getIntent().getIntExtra("result_day", 0);
         final int result_month = getIntent().getIntExtra("result_month", 0);
         final int result_year = getIntent().getIntExtra("result_year", 0);
+        boolean correct_form = getIntent().getBooleanExtra("correct_form", false);
 
-        TextView testTextArea;
+        if (correct_form) {
+            setTitle(result_name + " " + result_surname);
+        }
+
+        // Куда отсюда переходить будем?
+        final Intent savedIntent = new Intent(this, AprelTabLayout.class);
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_result);
+
+        //Включаем тулбар
+
+        Toolbar result_toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(result_toolbar);
+        ActionBar result_ab = getSupportActionBar();
+        result_ab.setDisplayHomeAsUpEnabled(true);
+
 
         // Дату в строку
 
@@ -153,10 +184,6 @@ public class Result extends AppCompatActivity {
                 String.format("%02d", result_day) +
                 String.format("%02d", result_month) +
                 String.format("%04d", result_year);
-
-
-        testTextArea = (TextView) findViewById(R.id.textViewResult);
-        testTextArea.setText(dateToStr + ", " + dateToStr.length());
 
         // Разбиваем числа на отдельные цифры
 
@@ -169,9 +196,8 @@ public class Result extends AppCompatActivity {
         // Складываем числа между собой (Сумма A)
 
         int magicSumA = getSumOfStrChars(dateToStr);
-        testTextArea.append("\n" + magicSumA);
 
-        int magicConst = 0;
+        int magicConst;
         if (result_year < 1999) {
             magicConst = -2;
         } else {
@@ -182,20 +208,17 @@ public class Result extends AppCompatActivity {
         // Складываем числа между собой (Сумма B)
 
         int magicSumB = getSumOfStrChars(String.valueOf(magicSumA));
-        testTextArea.append("\n" + magicSumB);
 
 
         // Число C
 
-        int magicSumC = 0;
+        int magicSumC;
             magicSumC = magicSumA + magicConst;
-        testTextArea.append("\n" + magicSumC);
 
 
         // Число D
 
         int magicSumD = getSumOfStrChars(String.valueOf(magicSumC));
-        testTextArea.append("\n" + magicSumD);
 
         // Строим матрицу!
         String magicFinalStr =
@@ -205,8 +228,6 @@ public class Result extends AppCompatActivity {
                 magicSumC +
                 magicSumD +
                 Math.abs(magicConst);
-
-            testTextArea.append("\n" + magicFinalStr + ", " + magicFinalStr.length());
 
         String[] matrix = new String[10];
         Arrays.fill(matrix, "");
@@ -265,7 +286,12 @@ public class Result extends AppCompatActivity {
         while(magicFinalDigit >= 10) {
             magicFinalDigit = getSumOfStrChars(String.valueOf(magicFinalDigit));
         }
-        testTextArea.append("\n Итоговая цифра: " + magicFinalDigit);
+
+
+
+        // Итогговая цифра
+        final TextView table_final_digit = (TextView) findViewById(R.id.table_final_digit);
+        table_final_digit.setText(String.valueOf(magicFinalDigit));
 
 
         // Мужские и женские цифры
@@ -280,10 +306,14 @@ public class Result extends AppCompatActivity {
                 matrix[5].length() +
                 matrix[7].length() +
                 matrix[9].length();
-        testTextArea.append(
-                "\n Мужские цифры: " + manDigit +
-                "\n Женские цифры: " + womanDigit
-        );
+
+        // Мужские цифры
+        final TextView table_man_digit = (TextView) findViewById(R.id.table_man_digit);
+        table_man_digit.setText(String.valueOf(manDigit));
+
+        // Мженские цифры
+        final TextView table_woman_digit = (TextView) findViewById(R.id.table_woman_digit);
+        table_woman_digit.setText(String.valueOf(womanDigit));
 
 
         // График
@@ -297,16 +327,16 @@ public class Result extends AppCompatActivity {
 
         ArrayList crossPoints = findChartCross(willChartVal, faithChartVal, yearsForChart);
 
-        testTextArea.append("\n Пересечение: " + crossPoints.size());
-        testTextArea.append("\n Точечки: " + Arrays.toString(crossPoints.toArray()));
-        testTextArea.append("\n Годы: " + Arrays.toString(yearsForChart.toArray()));
+//        testTextArea.append("\n Пересечение: " + crossPoints.size());
+//        testTextArea.append("\n Точечки: " + Arrays.toString(crossPoints.toArray()));
+//        testTextArea.append("\n Годы: " + Arrays.toString(yearsForChart.toArray()));
 
         ArrayList<ArrayList<Integer>> bothGraph = new ArrayList<ArrayList<Integer>>();
         bothGraph.add(faithChartVal);
         bothGraph.add(willChartVal);
 
-        testTextArea.append("\n Судьба: " + Arrays.toString(faithChartVal.toArray()));
-        testTextArea.append("\n Воля: " + Arrays.toString(willChartVal.toArray()));
+//        testTextArea.append("\n Судьба: " + Arrays.toString(faithChartVal.toArray()));
+//        testTextArea.append("\n Воля: " + Arrays.toString(willChartVal.toArray()));
 
         LineChart chart = (LineChart) findViewById(R.id.chartGraph);
 
@@ -318,22 +348,19 @@ public class Result extends AppCompatActivity {
             willPoints.add(new Entry(yearsForChart.get(i), willChartVal.get(i)));
         }
 
-
-
-
         LineDataSet faithDataSet = new LineDataSet(faithPoints, "Судьба"); // add entries to dataset
-        faithDataSet.setColor(Color.YELLOW);
+        faithDataSet.setColor(ContextCompat.getColor(getBaseContext(), R.color.colorYellow));
         faithDataSet.setValueTextColor(Color.WHITE);
         faithDataSet.setDrawValues(false);
-        faithDataSet.setCircleColor(Color.YELLOW);
+        faithDataSet.setCircleColor(ContextCompat.getColor(getBaseContext(), R.color.colorYellow));
         faithDataSet.setCircleColorHole(R.color.colorPrimaryDark);
         faithDataSet.setLineWidth(3f);
 
         LineDataSet willDataSet = new LineDataSet(willPoints, "Воля"); // add entries to dataset
-        willDataSet.setColor(Color.GREEN);
+        willDataSet.setColor(ContextCompat.getColor(getBaseContext(), R.color.colorGreen));
         willDataSet.setValueTextColor(Color.WHITE);
         willDataSet.setDrawValues(false);
-        willDataSet.setCircleColor(Color.GREEN);
+        willDataSet.setCircleColor(ContextCompat.getColor(getBaseContext(), R.color.colorGreen));
         willDataSet.setCircleColorHole(R.color.colorPrimaryDark);
         willDataSet.setLineWidth(3f);
 
@@ -346,9 +373,10 @@ public class Result extends AppCompatActivity {
         chart.setData(FinalChart);
         chart.setDescription("График судьбы и воли");
         chart.setDescriptionTextSize(14f);
-        chart.setDescriptionColor(Color.WHITE);
+        chart.setDescriptionColor(ContextCompat.getColor(getBaseContext(), R.color.colorPrimary200));
         chart.setTouchEnabled(false);
-        chart.animateXY(100, 100);
+        //chart.animateY(2000, Easing.EasingOption.EaseOutCirc);
+        //chart.animateXY(1000, 1000);
 
         YAxis leftAxis = chart.getAxisLeft();
         leftAxis.setTextColor(Color.WHITE);
@@ -371,22 +399,30 @@ public class Result extends AppCompatActivity {
         // Легенда
 
         Legend l = chart.getLegend();
-        l.setFormSize(10f); // set the size of the legend forms/shapes
+        l.setEnabled(true); // set the size of the legend forms/shapes
+        l.setFormSize(20f); // set the size of the legend forms/shapes
+        l.setFormSize(20f); // set the size of the legend forms/shapes
         l.setForm(Legend.LegendForm.LINE); // set what type of form/shape should be used
-        l.setPosition(Legend.LegendPosition.BELOW_CHART_LEFT);
+        l.setPosition(Legend.LegendPosition.ABOVE_CHART_CENTER);
         l.setTextSize(12f);
         l.setTextColor(Color.WHITE);
-        l.setXEntrySpace(5f); // set the space between the legend entries on the x-axis
+        l.setXEntrySpace(20f); // set the space between the legend entries on the x-axis
         l.setYEntrySpace(5f); // set the space between the legend entries on the y-axis
+        l.setWordWrapEnabled(true);
 
         chart.invalidate();
 
         // Сохраняем данные
 
-        FloatingActionButton result_save = (FloatingActionButton) findViewById(R.id.result_save);
+        Button result_save = (Button) findViewById(R.id.result_save);
 
-        result_save.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
+        if (!correct_form) {
+            result_save.setEnabled(false);
+            result_save.setBackgroundResource(R.color.colorPrimary500);
+            result_save.setTextColor(getResources().getColor(R.color.colorPrimary400));
+        } else {
+            result_save.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View view) {
                 DbHelper dbOpenHelper = new DbHelper(Result.this);
                 SQLiteDatabase db = dbOpenHelper.getWritableDatabase();
                 ContentValues cv = new ContentValues();
@@ -398,8 +434,16 @@ public class Result extends AppCompatActivity {
                 cv.put(DbHelper.YEAR, result_year);
 
                 db.insert(DbHelper.TABLE_NAME,null,cv);
+
+                String searchQuery = "SELECT * FROM " + DbHelper.TABLE_NAME;
+                Cursor cursor = db.rawQuery(searchQuery, null);
+
+                savedIntent.putExtra("tabToOpen", 1);
+                startActivity(savedIntent);
+                cursor.close();
                 db.close();
-            }
-        });
+                }
+            });
+        }
     }
 }

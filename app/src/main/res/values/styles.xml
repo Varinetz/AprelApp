@@ -28,9 +28,54 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
-    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+    <style name="AppTheme.ResultTextTable" parent="AppTheme">
+        <item name="android:textSize">20dp</item>
+        <item name="android:background">@color/colorPrimary600</item>
+        <item name="android:paddingTop">@dimen/result_text_table_vertical</item>
+        <item name="android:paddingBottom">@dimen/result_text_table_vertical</item>
+    </style>
+
+    <style name="AppTheme.ResultTextTable.Key">
+        <item name="android:layout_weight">.7</item>
+        <item name="android:paddingLeft">@dimen/fab_margin</item>
+    </style>
+    <style name="AppTheme.ResultTextTable.Val">
+        <item name="android:layout_weight">.3</item>
+        <item name="android:paddingRight">@dimen/fab_margin</item>
+        <item name="android:textColor">@color/colorYellow</item>
+    </style>
+
+    <style name="HorDivider" parent="AppTheme">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">1dp</item>
+        <item name="android:layout_marginTop">40dp</item>
+        <item name="android:layout_marginBottom">20dp</item>
+        <item name="android:background">@color/colorPrimary300</item>
+    </style>
+
+    <style name="HorDivider.Sub">
+        <item name="android:background">@color/colorPrimary500</item>
+    </style>
+
+
+    <style name="Button" parent="ThemeOverlay.AppCompat">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingStart">30dp</item>
+        <item name="android:paddingEnd">30dp</item>
+        <item name="android:layout_marginTop">22dp</item>
+        <item name="android:background">@color/colorAmber800</item>
+        <item name="android:clickable">true</item>
+        <item name="android:elegantTextHeight">true</item>
+        <item name="android:enabled">true</item>
+        <item name="android:padding">10dp</item>
+        <item name="android:layout_marginBottom">40dp</item>
+        <item name="android:contextClickable">true</item>
+        <item name="android:textColor">#ffffff</item>
+        <item name="android:longClickable">false</item>
+    </style>
+
 
     <!-- changes the default colours for EditTexts, including non-text elements (also works with the DatePicker -->
 

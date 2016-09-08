@@ -11,8 +11,8 @@ import android.widget.TextView;
 /**
  * Created by Руслан on 04.09.2016.
  */
-public class TodoCursorAdapter extends CursorAdapter {
-    public TodoCursorAdapter(Context context, Cursor cursor) {
+public class SavedListCursorAdapter extends CursorAdapter {
+    public SavedListCursorAdapter(Context context, Cursor cursor) {
         super(context, cursor, 0);
     }
 
@@ -28,8 +28,7 @@ public class TodoCursorAdapter extends CursorAdapter {
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
         // Find fields to populate in inflated template
-        TextView tvName = (TextView) view.findViewById(R.id.name);
-        TextView tvSurname = (TextView) view.findViewById(R.id.surname);
+        TextView tvName = (TextView) view.findViewById(R.id.fullName);
         TextView tvOccupation = (TextView) view.findViewById(R.id.occupation);
         TextView tvDate = (TextView) view.findViewById(R.id.date);
         // Extract properties from cursor
@@ -40,9 +39,8 @@ public class TodoCursorAdapter extends CursorAdapter {
         int month = cursor.getInt(cursor.getColumnIndexOrThrow("month"));
         int year = cursor.getInt(cursor.getColumnIndexOrThrow("year"));
         // Populate fields with extracted properties
-        tvName.setText(name);
-        tvSurname.setText(surname);
+        tvName.setText(name + " " + surname);
         tvOccupation.setText(occupation);
-        tvDate.setText(Integer.toString(day) + "." + Integer.toString(month) + "." + Integer.toString(year));
+        tvDate.setText(String.format("%02d",day) + "." + String.format("%02d",month) + "." + Integer.toString(year));
     }
 }

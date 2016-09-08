@@ -5,8 +5,11 @@
     <string name="new_calc_tab_name">Новый расчет</string>
     <string name="saved_tab_name">Сохраненные</string>
     <string name="title_activity_saved">saved</string>
-    <string name="title_activity_detail">Расчет</string>
+    <string name="title_activity_detail">Расчет без сохранения</string>
+    <string name="final_digit">Итоговая цифра</string>
+    <string name="man_digit">Мужские цифры</string>
+    <string name="woman_digit">Женские цифры</string>
+    <string name="will">Воля</string>
+    <string name="faith">Судьба</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
