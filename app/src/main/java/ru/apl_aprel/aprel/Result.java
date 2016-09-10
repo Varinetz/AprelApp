@@ -1,29 +1,23 @@
 package ru.apl_aprel.aprel;
 
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.PointF;
-import android.graphics.PorterDuff;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
@@ -32,10 +26,14 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
-import com.github.mikephil.charting.utils.ColorTemplate;
 
+import org.w3c.dom.Text;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 
@@ -44,7 +42,6 @@ public class Result extends AppCompatActivity {
     /* Menu END */
 
     public int getSumOfStrChars(String str) {
-        int[] strArr = new int[str.length()];
         int strSum = 0;
 
         for (int i = 0; i < str.length(); i++) {
@@ -57,12 +54,15 @@ public class Result extends AppCompatActivity {
     public ArrayList fillChart(int day, int month, int year, boolean replaceZeros) {
 
         String dayMonthStr = String.format("%02d", day) + String.format("%02d",month);
+        String yearStr = String.format("%04d", year);
 
         if (replaceZeros) {
             dayMonthStr = dayMonthStr.replace("0", "1");
+            yearStr = yearStr.replace("0", "1");
         }
 
         int dayMonthInt = Integer.parseInt(dayMonthStr, 10);
+        year = Integer.parseInt(yearStr, 10);
 
         String sumStr = String.valueOf(dayMonthInt * year);
 
@@ -91,6 +91,11 @@ public class Result extends AppCompatActivity {
         boolean onLine1 = false;
         boolean onLine2 = false;
         PointF intrsctn = new PointF();
+
+        if(y2 == y4) {
+            intrsctn.set((float) x2, (float) y2);
+            return intrsctn;
+        }
 
         denominator = ((y4 - y3) * (x2 - x1)) - ((x4 - x3) * (y2 - y1));
         if (denominator == 0) {
@@ -128,9 +133,20 @@ public class Result extends AppCompatActivity {
         return intrsctn;
     }
 
-    public ArrayList findChartCross(ArrayList<Integer> will, ArrayList<Integer> faith, ArrayList<Integer> years) {
+    public ArrayList findChartIntersect(ArrayList<Integer> will, ArrayList<Integer> faith, ArrayList<Integer> years) {
         ArrayList<PointF> crosses = new ArrayList<>();
 
+        Integer birthWill = will.get(0);
+        Integer birthFaith = faith.get(0);
+        Integer twelveWill = will.get(1);
+        Integer twelveFaith = faith.get(1);
+
+        // Ищем точку рождения, если пересекаются, пишем в массив точек
+        if(birthWill.equals(birthFaith) && !twelveWill.equals(twelveFaith)) {
+            PointF firstPoint = new PointF();
+            firstPoint.set(0, (float) birthFaith);
+            crosses.add(firstPoint);
+        }
 
         for (int i = 0; i < years.size() - 1; i++) {
             int startX = years.get(i); //P1x, G1x
@@ -158,13 +174,20 @@ public class Result extends AppCompatActivity {
         final int result_day = getIntent().getIntExtra("result_day", 0);
         final int result_month = getIntent().getIntExtra("result_month", 0);
         final int result_year = getIntent().getIntExtra("result_year", 0);
-        boolean correct_form = getIntent().getBooleanExtra("correct_form", false);
+        final boolean correct_form = getIntent().getBooleanExtra("correct_form", false);
+        final boolean fromSaved = getIntent().getBooleanExtra("from", false);
 
+        // from NewCalc
         if (correct_form) {
-            setTitle(result_name + " " + result_surname);
+                setTitle(result_name + " " + result_surname);
         }
 
-        // Куда отсюда переходить будем?
+        // from Saved
+        if (fromSaved) {
+            setTitle("[сохр.] " + result_name + " " + result_surname);
+        }
+
+        // По нажатию "сохранить" переходим
         final Intent savedIntent = new Intent(this, AprelTabLayout.class);
 
         super.onCreate(savedInstanceState);
@@ -177,12 +200,16 @@ public class Result extends AppCompatActivity {
         ActionBar result_ab = getSupportActionBar();
         result_ab.setDisplayHomeAsUpEnabled(true);
 
-
         // Дату в строку
 
         String dateToStr =
                 String.format("%02d", result_day) +
                 String.format("%02d", result_month) +
+                String.format("%04d", result_year);
+
+        String dateToFormatStr =
+                String.format("%02d", result_day) + "." +
+                String.format("%02d", result_month) + "." +
                 String.format("%04d", result_year);
 
         // Разбиваем числа на отдельные цифры
@@ -281,13 +308,10 @@ public class Result extends AppCompatActivity {
 
 
         // Итоговая цифра
-
         int magicFinalDigit = getSumOfStrChars(dateToStr);
         while(magicFinalDigit >= 10) {
             magicFinalDigit = getSumOfStrChars(String.valueOf(magicFinalDigit));
         }
-
-
 
         // Итогговая цифра
         final TextView table_final_digit = (TextView) findViewById(R.id.table_final_digit);
@@ -316,6 +340,10 @@ public class Result extends AppCompatActivity {
         table_woman_digit.setText(String.valueOf(womanDigit));
 
 
+        // Пишем для какой даты расчет в заголовок перед графиком
+        TextView dateTitle = (TextView) findViewById(R.id.dateTitle);
+        dateTitle.append(dateToFormatStr);
+
         // График
 
         ArrayList<Integer> faithChartVal = fillChart(result_day, result_month, result_year, false);
@@ -325,15 +353,55 @@ public class Result extends AppCompatActivity {
             yearsForChart.add(i);
         }
 
-        ArrayList crossPoints = findChartCross(willChartVal, faithChartVal, yearsForChart);
+        ArrayList<PointF> crossPoints = findChartIntersect(willChartVal, faithChartVal, yearsForChart);
 
-//        testTextArea.append("\n Пересечение: " + crossPoints.size());
-//        testTextArea.append("\n Точечки: " + Arrays.toString(crossPoints.toArray()));
-//        testTextArea.append("\n Годы: " + Arrays.toString(yearsForChart.toArray()));
+        TextView intrsctnTableTitle = (TextView) findViewById(R.id.intersectionsTableTitle);
+        intrsctnTableTitle.setText("Точки пересечения");
 
-        ArrayList<ArrayList<Integer>> bothGraph = new ArrayList<ArrayList<Integer>>();
-        bothGraph.add(faithChartVal);
-        bothGraph.add(willChartVal);
+        // Таблица с пересечениями
+        TableLayout intrsctnTable = (TableLayout) findViewById(R.id.intersectionsTable);
+
+        // Добаляем заголовок
+        TableRow intrsctnHeader = (TableRow) getLayoutInflater().inflate(R.layout.tpl_intersection_row_header, intrsctnTable, false);
+        intrsctnTable.addView(intrsctnHeader);
+
+        // Наполняем таблицу
+        for(int i = 0; i < crossPoints.size(); i++) {
+            if (crossPoints.get(i) != null) {
+
+                PointF point = crossPoints.get(i);
+
+                TableRow intrsctnRow = (TableRow) getLayoutInflater().inflate(R.layout.tpl_intersection_row, intrsctnTable, false);
+                TextView date = (TextView) intrsctnRow.findViewById(R.id.insctnDate);
+                TextView age = (TextView) intrsctnRow.findViewById(R.id.insctnAge);
+
+                String birthDate = result_day + "." + result_month + "." + result_year;  // Start date
+                SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy");
+                Calendar calendar = Calendar.getInstance();
+                try {
+                    calendar.setTime(sdf.parse(birthDate));
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+
+                int yearsToAdd = (int) point.x;
+                float daysToAdd = (point.x - yearsToAdd) * 365; // Получаем десятичную дробь и сичтаем сколько это в днях
+
+                calendar.add(Calendar.YEAR, yearsToAdd);
+                calendar.add(Calendar.DATE, (int) daysToAdd);
+
+                String outputDate = sdf.format(calendar.getTime());
+                date.setText(outputDate);
+
+                age.setText(String.valueOf(yearsToAdd));
+                intrsctnTable.addView(intrsctnRow);
+            }
+        }
+
+        //TextView testTextArea = (TextView) findViewById(R.id.testTextArea);
+//          testTextArea.append("\n Пересечение: " + crossPoints.size());
+ //       testTextArea.append("\n Точечки: " + Arrays.toString(crossPoints.toArray()));
+//          testTextArea.append("\n Годы: " + Arrays.toString(yearsForChart.toArray()));
 
 //        testTextArea.append("\n Судьба: " + Arrays.toString(faithChartVal.toArray()));
 //        testTextArea.append("\n Воля: " + Arrays.toString(willChartVal.toArray()));
@@ -342,31 +410,51 @@ public class Result extends AppCompatActivity {
 
         List<Entry> faithPoints = new ArrayList<>();
         List<Entry> willPoints = new ArrayList<>();
+        List<Entry> intersectPoints = new ArrayList<>();
 
         for(int i=0; i < yearsForChart.size(); i++) {
             faithPoints.add(new Entry(yearsForChart.get(i), faithChartVal.get(i)));
             willPoints.add(new Entry(yearsForChart.get(i), willChartVal.get(i)));
         }
 
+        for (int i = 0; i < crossPoints.size(); i++) {
+            if (crossPoints.get(i) != null) {
+                PointF point = crossPoints.get(i);
+                intersectPoints.add(new Entry(point.x, point.y));
+            }
+        }
+
         LineDataSet faithDataSet = new LineDataSet(faithPoints, "Судьба"); // add entries to dataset
-        faithDataSet.setColor(ContextCompat.getColor(getBaseContext(), R.color.colorYellow));
+        faithDataSet.setColor(ContextCompat.getColor(getBaseContext(), R.color.colorGreen));
         faithDataSet.setValueTextColor(Color.WHITE);
         faithDataSet.setDrawValues(false);
-        faithDataSet.setCircleColor(ContextCompat.getColor(getBaseContext(), R.color.colorYellow));
+        faithDataSet.setCircleColor(ContextCompat.getColor(getBaseContext(), R.color.colorGreen));
         faithDataSet.setCircleColorHole(R.color.colorPrimaryDark);
         faithDataSet.setLineWidth(3f);
 
         LineDataSet willDataSet = new LineDataSet(willPoints, "Воля"); // add entries to dataset
-        willDataSet.setColor(ContextCompat.getColor(getBaseContext(), R.color.colorGreen));
+        willDataSet.setColor(ContextCompat.getColor(getBaseContext(), R.color.colorYellow));
         willDataSet.setValueTextColor(Color.WHITE);
         willDataSet.setDrawValues(false);
-        willDataSet.setCircleColor(ContextCompat.getColor(getBaseContext(), R.color.colorGreen));
+        willDataSet.setCircleColor(ContextCompat.getColor(getBaseContext(), R.color.colorYellow));
         willDataSet.setCircleColorHole(R.color.colorPrimaryDark);
         willDataSet.setLineWidth(3f);
+
+        LineDataSet intersectDataSet = new LineDataSet(intersectPoints, "Пересечения"); // add entries to dataset
+        intersectDataSet.setColor(ContextCompat.getColor(getBaseContext(), R.color.colorInrsctPoint));
+        intersectDataSet.setValueTextColor(Color.WHITE);
+        intersectDataSet.setDrawValues(false);
+        intersectDataSet.setCircleColor(ContextCompat.getColor(getBaseContext(), R.color.colorInrsctPoint));
+        intersectDataSet.setCircleColorHole(R.color.colorInrsctPoint);
+        intersectDataSet.setCircleRadius(6f);
+        intersectDataSet.setCircleHoleRadius(3f);
+        intersectDataSet.setLineWidth(0f);
+        intersectDataSet.enableDashedLine(0f, 400f, 0f);
 
         List<ILineDataSet> dataSets = new ArrayList<ILineDataSet>();
         dataSets.add(faithDataSet);
         dataSets.add(willDataSet);
+        dataSets.add(intersectDataSet);
 
         LineData FinalChart = new LineData(dataSets);
 
@@ -391,7 +479,7 @@ public class Result extends AppCompatActivity {
 
         XAxis bttmAxis = chart.getXAxis();
         bttmAxis.setTextColor(Color.WHITE);
-        bttmAxis.setTextSize(14f);
+        bttmAxis.setTextSize(12f);
         bttmAxis.setGranularity(12f);
         bttmAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         bttmAxis.setAvoidFirstLastClipping(true);
@@ -416,9 +504,9 @@ public class Result extends AppCompatActivity {
 
         Button result_save = (Button) findViewById(R.id.result_save);
 
-        if (!correct_form) {
+        if (!correct_form || fromSaved) {
             result_save.setEnabled(false);
-            result_save.setBackgroundResource(R.color.colorPrimary500);
+            result_save.setBackgroundResource(R.drawable.disabled_button);
             result_save.setTextColor(getResources().getColor(R.color.colorPrimary400));
         } else {
             result_save.setOnClickListener(new View.OnClickListener() {

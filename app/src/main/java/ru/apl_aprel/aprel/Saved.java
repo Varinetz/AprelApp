@@ -2,6 +2,7 @@ package ru.apl_aprel.aprel;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -34,13 +35,10 @@ public class Saved extends Fragment {
     }
 
     private Map<String, String> getEntryData(SQLiteDatabase db, long id) {
-        db.delete(DbHelper.TABLE_NAME, "_id = " + id, null);
-
         Cursor cursor = null;
         Map<String, String> entry = new HashMap<>();
 
-        try{
-            cursor = db.rawQuery("SELECT * FROM " + DbHelper.TABLE_NAME + " WHERE _id=?", new String[] {id + ""});
+            cursor = db.query(DbHelper.TABLE_NAME, null, "_id = ?", new String[] {String.valueOf(id)}, null, null, null);
 
             if(cursor.getCount() > 0) {
 
@@ -49,21 +47,23 @@ public class Saved extends Fragment {
                 entry.put("name", cursor.getString(cursor.getColumnIndex("name")));
                 entry.put("surname", cursor.getString(cursor.getColumnIndex("surname")));
                 entry.put("occupation", cursor.getString(cursor.getColumnIndex("occupation")));
+                entry.put("day", String.valueOf(cursor.getInt(cursor.getColumnIndex("day"))));
+                entry.put("month", String.valueOf(cursor.getInt(cursor.getColumnIndex("month"))));
+                entry.put("year", String.valueOf(cursor.getInt(cursor.getColumnIndex("year"))));
             }
 
-            return entry;
-        }finally {
             cursor.close();
-        }
+            return entry;
     }
 
     private AlertDialog AskOption(final SQLiteDatabase db, final long id, final ListView lvItems)
     {
+        Map person = getEntryData(db, id);
 
         AlertDialog myQuittingDialogBox =new AlertDialog.Builder(getActivity())
                 //set message, title, and icon
                 .setTitle("Удаление")
-                .setMessage("Удалить запись?")
+                .setMessage("Удалить запись \"" + person.get("name") + " " + person.get("surname")+ "\" ?")
                 .setIcon(R.drawable.ic_delete_forever_white_24dp)
 
                 .setPositiveButton("Удалить", new DialogInterface.OnClickListener() {
@@ -108,7 +108,7 @@ public class Saved extends Fragment {
         // TodoDatabaseHandler is a SQLiteOpenHelper class connecting to SQLite
         DbHelper handler = new DbHelper(getActivity());
         // Get access to the underlying writeable database
-        SQLiteDatabase db = handler.getWritableDatabase();
+        final SQLiteDatabase db = handler.getWritableDatabase();
         // Query for items from the database and get a cursor back
 
         // Find ListView to populate
@@ -120,13 +120,29 @@ public class Saved extends Fragment {
             @Override
             public boolean onItemLongClick(AdapterView<?> arg0, View arg1,
                                            int pos, long id) {
-                DbHelper handler = new DbHelper(getActivity());
-                SQLiteDatabase db = handler.getWritableDatabase();
 
                 AlertDialog diaBox = AskOption(db, id, lvItems);
                 diaBox.show();
                 refreshSavedList(db, lvItems);
                 return true;
+            }
+        });
+
+
+        lvItems.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> parent, View view,
+                                    int position, long id) {
+                final Intent resultIntent = new Intent(getActivity(), Result.class);
+                Map person = getEntryData(db, id);
+                resultIntent.putExtra("result_name", String.valueOf(person.get("name")));
+                resultIntent.putExtra("result_surname", String.valueOf(person.get("surname")) );
+                resultIntent.putExtra("result_occupation", String.valueOf(person.get("occupation")) );
+                resultIntent.putExtra("result_day", Integer.parseInt(String.valueOf(person.get("day"))) );
+                resultIntent.putExtra("result_month", Integer.parseInt(String.valueOf(person.get("month"))) );
+                resultIntent.putExtra("result_year", Integer.parseInt(String.valueOf(person.get("year"))) );
+                resultIntent.putExtra("from", true);
+
+                startActivity(resultIntent);
             }
         });
 

@@ -12,7 +12,10 @@
     <color name="colorPrimary50">#EDE7F6</color>
     <color name="colorAccent">#FAB900</color>
     <color name="colorYellow">#FAB900</color>
+    <color name="colorAmber600">#FFB300</color>
+    <color name="colorAmber700">#FFA000</color>
     <color name="colorAmber800">#FF8F00</color>
+    <color name="colorInrsctPoint">#FF6F00</color>
     <color name="colorOrange">#E4481C</color>
     <color name="colorGreen">#88BC24</color>
 </resources>

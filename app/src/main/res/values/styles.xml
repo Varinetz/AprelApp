@@ -29,21 +29,41 @@
     </style>
 
 
-    <style name="AppTheme.ResultTextTable" parent="AppTheme">
+    <style name="AppTheme.Table" parent="AppTheme">
         <item name="android:textSize">20dp</item>
         <item name="android:background">@color/colorPrimary600</item>
         <item name="android:paddingTop">@dimen/result_text_table_vertical</item>
         <item name="android:paddingBottom">@dimen/result_text_table_vertical</item>
     </style>
 
-    <style name="AppTheme.ResultTextTable.Key">
+    <style name="AppTheme.Table.Key">
         <item name="android:layout_weight">.7</item>
         <item name="android:paddingLeft">@dimen/fab_margin</item>
+        <item name="android:layout_marginTop">@dimen/result_text_table_vertical</item>
+        <item name="android:layout_marginBottom">@dimen/result_text_table_vertical</item>
     </style>
-    <style name="AppTheme.ResultTextTable.Val">
+    <style name="AppTheme.Table.Val">
         <item name="android:layout_weight">.3</item>
         <item name="android:paddingRight">@dimen/fab_margin</item>
         <item name="android:textColor">@color/colorYellow</item>
+        <item name="android:layout_marginTop">@dimen/result_text_table_vertical</item>
+        <item name="android:layout_marginBottom">@dimen/result_text_table_vertical</item>
+    </style>
+
+    <style name="AppTheme.Table.Head">
+        <item name="android:layout_weight">.5</item>
+        <item name="android:paddingRight">@dimen/fab_margin</item>
+        <item name="android:paddingLeft">@dimen/fab_margin</item>
+        <item name="android:background">@color/colorPrimary600</item>
+        <item name="android:textColor">@color/colorPrimary200</item>
+    </style>
+
+    <style name="AppTheme.Table.Row">
+        <item name="android:layout_weight">.5</item>
+        <item name="android:paddingRight">@dimen/fab_margin</item>
+        <item name="android:paddingLeft">@dimen/fab_margin</item>
+        <item name="android:background">@color/colorPrimary600</item>
+        <item name="android:textColor">#ffffff</item>
     </style>
 
     <style name="HorDivider" parent="AppTheme">
@@ -58,6 +78,11 @@
         <item name="android:background">@color/colorPrimary500</item>
     </style>
 
+    <style name="matrixText">
+        <item name="android:textSize">25sp</item>
+        <item name="android:textColor">#ffffff</item>
+    </style>
+
 
     <style name="Button" parent="ThemeOverlay.AppCompat">
         <item name="android:layout_width">wrap_content</item>
@@ -65,7 +90,7 @@
         <item name="android:paddingStart">30dp</item>
         <item name="android:paddingEnd">30dp</item>
         <item name="android:layout_marginTop">22dp</item>
-        <item name="android:background">@color/colorAmber800</item>
+        <item name="android:background">@drawable/custom_button</item>
         <item name="android:clickable">true</item>
         <item name="android:elegantTextHeight">true</item>
         <item name="android:enabled">true</item>
