@@ -13,7 +13,6 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -27,8 +26,6 @@ import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 
-import org.w3c.dom.Text;
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -41,7 +38,7 @@ public class Result extends AppCompatActivity {
     /* Menu */
     /* Menu END */
 
-    public int getSumOfStrChars(String str) {
+    private int getSumOfStrChars(String str) {
         int strSum = 0;
 
         for (int i = 0; i < str.length(); i++) {
@@ -51,7 +48,7 @@ public class Result extends AppCompatActivity {
         return strSum;
     }
 
-    public ArrayList fillChart(int day, int month, int year, boolean replaceZeros) {
+    private ArrayList fillChart(int day, int month, int year, boolean replaceZeros) {
 
         String dayMonthStr = String.format("%02d", day) + String.format("%02d",month);
         String yearStr = String.format("%04d", year);
@@ -66,7 +63,7 @@ public class Result extends AppCompatActivity {
 
         String sumStr = String.valueOf(dayMonthInt * year);
 
-        ArrayList graphNums = new ArrayList();
+        ArrayList<Integer> graphNums = new ArrayList<>();
 
         for (int i = sumStr.length() - 1; i >= 0; i--) {
            graphNums.add(Character.getNumericValue(sumStr.charAt(i)));
@@ -82,7 +79,7 @@ public class Result extends AppCompatActivity {
     }
 
 
-    public PointF intersectionPoint(
+    private PointF intersectionPoint(
             int x1,int y1,int x2,int y2,
             int x3, int y3, int x4,int y4
     ) {
@@ -133,7 +130,7 @@ public class Result extends AppCompatActivity {
         return intrsctn;
     }
 
-    public ArrayList findChartIntersect(ArrayList<Integer> will, ArrayList<Integer> faith, ArrayList<Integer> years) {
+    private ArrayList findChartIntersect(ArrayList<Integer> will, ArrayList<Integer> faith, ArrayList<Integer> years) {
         ArrayList<PointF> crosses = new ArrayList<>();
 
         Integer birthWill = will.get(0);
@@ -212,13 +209,6 @@ public class Result extends AppCompatActivity {
                 String.format("%02d", result_month) + "." +
                 String.format("%04d", result_year);
 
-        // Разбиваем числа на отдельные цифры
-
-        int[] magicNums = new int[8];
-
-        for (int i = 0; i < dateToStr.length(); i++) {
-            magicNums[i] = Character.getNumericValue(dateToStr.charAt(i));
-        }
 
         // Складываем числа между собой (Сумма A)
 
@@ -411,12 +401,15 @@ public class Result extends AppCompatActivity {
         List<Entry> faithPoints = new ArrayList<>();
         List<Entry> willPoints = new ArrayList<>();
         List<Entry> intersectPoints = new ArrayList<>();
+        List<Entry> todayPoints = new ArrayList<>();
 
+        // Готовим волю и судьюу
         for(int i=0; i < yearsForChart.size(); i++) {
             faithPoints.add(new Entry(yearsForChart.get(i), faithChartVal.get(i)));
             willPoints.add(new Entry(yearsForChart.get(i), willChartVal.get(i)));
         }
 
+        // Готовим пересечения
         for (int i = 0; i < crossPoints.size(); i++) {
             if (crossPoints.get(i) != null) {
                 PointF point = crossPoints.get(i);
@@ -424,9 +417,14 @@ public class Result extends AppCompatActivity {
             }
         }
 
+        // Готовим линию сегодня
+        int currYear = Calendar.getInstance().get(Calendar.YEAR);
+        float todayX = currYear - result_year;
+        todayPoints.add(new Entry(todayX, 0f));
+        todayPoints.add(new Entry(todayX, 9f));
+
         LineDataSet faithDataSet = new LineDataSet(faithPoints, "Судьба"); // add entries to dataset
         faithDataSet.setColor(ContextCompat.getColor(getBaseContext(), R.color.colorGreen));
-        faithDataSet.setValueTextColor(Color.WHITE);
         faithDataSet.setDrawValues(false);
         faithDataSet.setCircleColor(ContextCompat.getColor(getBaseContext(), R.color.colorGreen));
         faithDataSet.setCircleColorHole(R.color.colorPrimaryDark);
@@ -434,7 +432,6 @@ public class Result extends AppCompatActivity {
 
         LineDataSet willDataSet = new LineDataSet(willPoints, "Воля"); // add entries to dataset
         willDataSet.setColor(ContextCompat.getColor(getBaseContext(), R.color.colorYellow));
-        willDataSet.setValueTextColor(Color.WHITE);
         willDataSet.setDrawValues(false);
         willDataSet.setCircleColor(ContextCompat.getColor(getBaseContext(), R.color.colorYellow));
         willDataSet.setCircleColorHole(R.color.colorPrimaryDark);
@@ -442,7 +439,6 @@ public class Result extends AppCompatActivity {
 
         LineDataSet intersectDataSet = new LineDataSet(intersectPoints, "Пересечения"); // add entries to dataset
         intersectDataSet.setColor(ContextCompat.getColor(getBaseContext(), R.color.colorInrsctPoint));
-        intersectDataSet.setValueTextColor(Color.WHITE);
         intersectDataSet.setDrawValues(false);
         intersectDataSet.setCircleColor(ContextCompat.getColor(getBaseContext(), R.color.colorInrsctPoint));
         intersectDataSet.setCircleColorHole(R.color.colorInrsctPoint);
@@ -451,10 +447,17 @@ public class Result extends AppCompatActivity {
         intersectDataSet.setLineWidth(0f);
         intersectDataSet.enableDashedLine(0f, 400f, 0f);
 
-        List<ILineDataSet> dataSets = new ArrayList<ILineDataSet>();
+        LineDataSet todayDataSet = new LineDataSet(todayPoints, "Сегодня"); // add entries to dataset
+        todayDataSet.setColor(ContextCompat.getColor(getBaseContext(), R.color.colorTodayLine));
+        todayDataSet.setDrawValues(false);
+        todayDataSet.setDrawCircles(false);
+        todayDataSet.setLineWidth(3f);
+
+        List<ILineDataSet> dataSets = new ArrayList<>();
         dataSets.add(faithDataSet);
         dataSets.add(willDataSet);
         dataSets.add(intersectDataSet);
+        dataSets.add(todayDataSet);
 
         LineData FinalChart = new LineData(dataSets);
 
@@ -488,14 +491,13 @@ public class Result extends AppCompatActivity {
 
         Legend l = chart.getLegend();
         l.setEnabled(true); // set the size of the legend forms/shapes
-        l.setFormSize(20f); // set the size of the legend forms/shapes
-        l.setFormSize(20f); // set the size of the legend forms/shapes
-        l.setForm(Legend.LegendForm.LINE); // set what type of form/shape should be used
+        l.setFormSize(8f); // set the size of the legend forms/shapes
+        l.setForm(Legend.LegendForm.CIRCLE); // set what type of form/shape should be used
         l.setPosition(Legend.LegendPosition.ABOVE_CHART_CENTER);
-        l.setTextSize(12f);
+        l.setTextSize(11f);
         l.setTextColor(Color.WHITE);
-        l.setXEntrySpace(20f); // set the space between the legend entries on the x-axis
-        l.setYEntrySpace(5f); // set the space between the legend entries on the y-axis
+        l.setXEntrySpace(12f); // set the space between the legend entries on the x-axis
+        l.setYEntrySpace(2f); // set the space between the legend entries on the y-axis
         l.setWordWrapEnabled(true);
 
         chart.invalidate();

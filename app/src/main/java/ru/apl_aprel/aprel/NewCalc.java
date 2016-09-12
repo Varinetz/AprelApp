@@ -14,6 +14,8 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import java.util.Calendar;
+import java.util.Date;
+
 /**
  * A simple {@link Fragment} subclass.
  */
@@ -40,6 +42,7 @@ public class NewCalc extends Fragment {
 
         // Устанавливаем текущую дату для DatePicker
         mDatePicker.init(year, month, day, null);
+        mDatePicker.setMaxDate(new Date().getTime());
     }
 
     @Override

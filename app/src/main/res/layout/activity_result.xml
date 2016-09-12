@@ -37,7 +37,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="20dp"
-            android:paddingBottom="60dp">
+            android:paddingBottom="@dimen/fab_margin">
 
 
             <TextView
@@ -50,17 +50,11 @@
                 android:layout_marginBottom="@dimen/fab_margin_double"
                 android:layout_gravity="center_horizontal" />
 
-
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="270dp">
-
                 <com.github.mikephil.charting.charts.LineChart
                 android:id="@+id/chartGraph"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-
-            </FrameLayout>
+                android:layout_height="270dp"
+                    android:paddingTop="40dp"/>
 
             <View style="@style/HorDivider.Sub"/>
             <TextView
@@ -98,7 +92,6 @@
                 android:id="@+id/matrixTable"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/chartGraph"
                 android:stretchColumns="*"
                 android:layout_marginTop="20dp"
                 android:layout_marginBottom="20dp">
@@ -265,14 +258,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="30dp"
-                android:layout_marginBottom="30dp"
+                android:layout_marginBottom="@dimen/fab_margin"
                 android:layout_gravity="center_horizontal">
-
-
 
                 <Button
                     style="@style/Button"
-                    android:layout_marginTop="@dimen/fab_margin"
                     android:text="Сохранить"
                     android:id="@+id/result_save"
                     android:layout_weight=".5"
@@ -281,7 +271,6 @@
                     />
                 <Button
                     style="@style/Button"
-                    android:layout_marginTop="@dimen/fab_margin"
                     android:text="Отправить"
                     android:id="@+id/result_send"
                     android:layout_weight=".5"
@@ -290,6 +279,7 @@
                     />
 
             </LinearLayout>
+            <include layout="@layout/tpl_footer"/>
 
         </LinearLayout>
     </ScrollView>
