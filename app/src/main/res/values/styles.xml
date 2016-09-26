@@ -2,22 +2,6 @@
 
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
-        <!-- Customize your theme here. -->
-        <!--
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimary700">@color/colorPrimary700</item>
-        <item name="colorPrimary600">@color/colorPrimary600</item>
-        <item name="colorPrimary500">@color/colorPrimary500</item>
-        <item name="colorPrimary400">@color/colorPrimary400</item>
-        <item name="colorPrimary300">@color/colorPrimary300</item>
-        <item name="colorPrimary200">@color/colorPrimary200</item>
-        <item name="colorPrimary100">@color/colorPrimary100</item>
-        <item name="colorPrimary50">@color/colorPrimary50</item>
-        <item name="colorAccent">@color/colorAccent</item>
-        <item name="colorOrange">@color/colorOrange</item>
-        <item name="colorGreen">@color/colorGreen</item>
-        -->
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorAccent">@color/colorAccent</item>
@@ -79,8 +63,19 @@
     </style>
 
     <style name="matrixText">
+        <item name="android:layout_weight">0.3333</item>
         <item name="android:textSize">25sp</item>
         <item name="android:textColor">#ffffff</item>
+        <item name="android:paddingTop">25dp</item>
+        <item name="android:paddingBottom">25dp</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:background">@color/colorPrimary700</item>
+    </style>
+
+    <style name="matrixHorDivider">
+        <item name="android:layout_width">2dp</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:background">@color/colorYellow</item>
     </style>
 
 
@@ -101,6 +96,22 @@
         <item name="android:longClickable">false</item>
     </style>
 
+    <style name="chartLegendColors">
+        <item name="android:layout_height">3dp</item>
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_marginLeft">20dp</item>
+        <item name="android:layout_marginRight">20dp</item>
+        <item name="android:layout_marginBottom">8dp</item>
+        <item name="android:background">@color/colorYellow</item>
+        <item name="android:layout_weight">1</item>
+    </style>
+
+    <style name="chartLegendLabels">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:textSize">12dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_weight">1</item>
+    </style>
 
     <!-- changes the default colours for EditTexts, including non-text elements (also works with the DatePicker -->
 

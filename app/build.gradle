@@ -1,9 +1,16 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+        Sign {
+            keyAlias 'varinetz_aprel_developer_key'
+            keyPassword 'var3561'
+            storeFile file('C:/Users/Руслан/YandexDisk/android_developer_key/varinetz_aprel.jks')
+            storePassword 'var3561'
+        }
+    }
     compileSdkVersion 24
     buildToolsVersion "24.0.0"
-
     defaultConfig {
         applicationId "ru.apl_aprel.aprel"
         minSdkVersion 15
@@ -15,6 +22,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.Sign
         }
     }
 }
@@ -22,7 +30,7 @@ repositories {
     jcenter()
 }
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:24.0.0'
     compile 'com.android.support:design:24.0.0'

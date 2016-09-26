@@ -18,13 +18,17 @@ import android.widget.TableRow;
 import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.formatter.AxisValueFormatter;
+import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
+import com.github.mikephil.charting.utils.ViewPortHandler;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -338,7 +342,7 @@ public class Result extends AppCompatActivity {
 
         ArrayList<Integer> faithChartVal = fillChart(result_day, result_month, result_year, false);
         ArrayList<Integer> willChartVal = fillChart(result_day, result_month, result_year, true);
-        ArrayList<Integer> yearsForChart = new ArrayList<>();
+        final ArrayList<Integer> yearsForChart = new ArrayList<>();
         for (int i=0; i<=72; i+=12){
             yearsForChart.add(i);
         }
@@ -403,7 +407,7 @@ public class Result extends AppCompatActivity {
         List<Entry> intersectPoints = new ArrayList<>();
         List<Entry> todayPoints = new ArrayList<>();
 
-        // Готовим волю и судьюу
+        // Готовим волю и судьбу
         for(int i=0; i < yearsForChart.size(); i++) {
             faithPoints.add(new Entry(yearsForChart.get(i), faithChartVal.get(i)));
             willPoints.add(new Entry(yearsForChart.get(i), willChartVal.get(i)));
@@ -437,15 +441,27 @@ public class Result extends AppCompatActivity {
         willDataSet.setCircleColorHole(R.color.colorPrimaryDark);
         willDataSet.setLineWidth(3f);
 
+        ValueFormatter intersectionsValueFormatter = new ValueFormatter() {
+
+            @Override
+            public String getFormattedValue(float value, Entry entry, int dataSetIndex, ViewPortHandler viewPortHandler) {
+
+                return String.valueOf((int) entry.getX());
+            }
+        };
+
         LineDataSet intersectDataSet = new LineDataSet(intersectPoints, "Пересечения"); // add entries to dataset
         intersectDataSet.setColor(ContextCompat.getColor(getBaseContext(), R.color.colorInrsctPoint));
-        intersectDataSet.setDrawValues(false);
+        intersectDataSet.setValueTextColor(Color.WHITE);
+        intersectDataSet.setValueTextSize(16f);
+        //intersectDataSet.setDrawValues(false);
         intersectDataSet.setCircleColor(ContextCompat.getColor(getBaseContext(), R.color.colorInrsctPoint));
         intersectDataSet.setCircleColorHole(R.color.colorInrsctPoint);
         intersectDataSet.setCircleRadius(6f);
         intersectDataSet.setCircleHoleRadius(3f);
         intersectDataSet.setLineWidth(0f);
         intersectDataSet.enableDashedLine(0f, 400f, 0f);
+        intersectDataSet.setValueFormatter(intersectionsValueFormatter);
 
         LineDataSet todayDataSet = new LineDataSet(todayPoints, "Сегодня"); // add entries to dataset
         todayDataSet.setColor(ContextCompat.getColor(getBaseContext(), R.color.colorTodayLine));
@@ -462,23 +478,42 @@ public class Result extends AppCompatActivity {
         LineData FinalChart = new LineData(dataSets);
 
         chart.setData(FinalChart);
-        chart.setDescription("График судьбы и воли");
-        chart.setDescriptionTextSize(14f);
-        chart.setDescriptionColor(ContextCompat.getColor(getBaseContext(), R.color.colorPrimary200));
+        chart.setDescription("");
         chart.setTouchEnabled(false);
-        //chart.animateY(2000, Easing.EasingOption.EaseOutCirc);
-        //chart.animateXY(1000, 1000);
 
         YAxis leftAxis = chart.getAxisLeft();
         leftAxis.setTextColor(Color.WHITE);
-        leftAxis.setTextSize(14f);
+        leftAxis.setTextSize(12f);
         leftAxis.setGranularity(1f);
-        //leftAxis.setLabelCount(6, true); // force 6 labels
+        leftAxis.setAxisMaxValue(9);
+        leftAxis.setAxisMinValue(0);
+        leftAxis.setGranularityEnabled(true);
+        leftAxis.setLabelCount(8, true); // force 6 labels
 
         YAxis rightAxis = chart.getAxisRight();
-        rightAxis.setTextColor(Color.WHITE);
-        rightAxis.setTextSize(14f);
-        rightAxis.setGranularity(1f);
+        rightAxis.setEnabled(false);
+//        rightAxis.setTextColor(Color.WHITE);
+//        rightAxis.setTextSize(14f);
+//        rightAxis.setGranularity(1f);
+//        leftAxis.setAxisMaxValue(9);
+//        leftAxis.setAxisMinValue(0);
+
+
+        AxisValueFormatter xAxisFormatter = new AxisValueFormatter() {
+
+            @Override
+            public String getFormattedValue(float value, AxisBase axis) {
+                if(value != 0) {
+                    return String.valueOf((int) value);
+                } else {
+                    return "";
+                }
+            }
+
+            // we don't draw numbers, so no decimal digits needed
+            @Override
+            public int getDecimalDigits() {  return 0; }
+        };
 
         XAxis bttmAxis = chart.getXAxis();
         bttmAxis.setTextColor(Color.WHITE);
@@ -486,19 +521,20 @@ public class Result extends AppCompatActivity {
         bttmAxis.setGranularity(12f);
         bttmAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         bttmAxis.setAvoidFirstLastClipping(true);
+        bttmAxis.setValueFormatter(xAxisFormatter);
 
         // Легенда
 
         Legend l = chart.getLegend();
-        l.setEnabled(true); // set the size of the legend forms/shapes
-        l.setFormSize(8f); // set the size of the legend forms/shapes
-        l.setForm(Legend.LegendForm.CIRCLE); // set what type of form/shape should be used
-        l.setPosition(Legend.LegendPosition.ABOVE_CHART_CENTER);
-        l.setTextSize(11f);
-        l.setTextColor(Color.WHITE);
-        l.setXEntrySpace(12f); // set the space between the legend entries on the x-axis
-        l.setYEntrySpace(2f); // set the space between the legend entries on the y-axis
-        l.setWordWrapEnabled(true);
+        l.setEnabled(false); // set the size of the legend forms/shapes
+//        l.setFormSize(8f); // set the size of the legend forms/shapes
+//        l.setForm(Legend.LegendForm.CIRCLE); // set what type of form/shape should be used
+//        l.setPosition(Legend.LegendPosition.ABOVE_CHART_CENTER);
+//        l.setTextSize(11f);
+//        l.setTextColor(Color.WHITE);
+//        l.setXEntrySpace(12f); // set the space between the legend entries on the x-axis
+//        l.setYEntrySpace(2f); // set the space between the legend entries on the y-axis
+        //l.setWordWrapEnabled(true);
 
         chart.invalidate();
 
