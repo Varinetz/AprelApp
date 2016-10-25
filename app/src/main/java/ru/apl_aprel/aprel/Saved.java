@@ -88,7 +88,7 @@ public class Saved extends Fragment {
     }
 
     private boolean refreshSavedList(SQLiteDatabase db, ListView lvItems) {
-        String searchQuery = "SELECT * FROM " + DbHelper.TABLE_NAME;
+        String searchQuery = "SELECT * FROM " + DbHelper.TABLE_NAME + " ORDER BY name";
         Cursor savedListCursor = db.rawQuery(searchQuery, null);
 
         SavedListCursorAdapter savedListAdapter = new SavedListCursorAdapter(getActivity(), savedListCursor);

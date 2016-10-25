@@ -219,7 +219,7 @@ public class Result extends AppCompatActivity {
         int magicSumA = getSumOfStrChars(dateToStr);
 
         int magicConst;
-        if (result_year < 1999) {
+        if (result_year <= 1999) {
             magicConst = -2;
         } else {
             magicConst = 19;
@@ -488,15 +488,12 @@ public class Result extends AppCompatActivity {
         leftAxis.setAxisMaxValue(9);
         leftAxis.setAxisMinValue(0);
         leftAxis.setGranularityEnabled(true);
-        leftAxis.setLabelCount(8, true); // force 6 labels
+        leftAxis.setLabelCount(10, true); // force 6 labels
 
         YAxis rightAxis = chart.getAxisRight();
-        rightAxis.setEnabled(false);
-//        rightAxis.setTextColor(Color.WHITE);
-//        rightAxis.setTextSize(14f);
-//        rightAxis.setGranularity(1f);
-//        leftAxis.setAxisMaxValue(9);
-//        leftAxis.setAxisMinValue(0);
+        rightAxis.setEnabled(true);
+        rightAxis.setDrawLabels(false);
+        rightAxis.setDrawGridLines(false);
 
 
         AxisValueFormatter xAxisFormatter = new AxisValueFormatter() {
@@ -538,6 +535,11 @@ public class Result extends AppCompatActivity {
 
         chart.invalidate();
 
+        // Отключаем кнопку отправки пока функция не готова
+        Button result_send = (Button) findViewById(R.id.result_send);
+        result_send.setEnabled(false);
+        result_send.setBackgroundResource(R.drawable.disabled_button);
+        result_send.setTextColor(getResources().getColor(R.color.colorPrimary400));
         // Сохраняем данные
 
         Button result_save = (Button) findViewById(R.id.result_save);

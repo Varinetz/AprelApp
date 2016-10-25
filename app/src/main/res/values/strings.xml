@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Апрель</string>
+    <string name="app_name">Академия Апрель</string>
     <string name="action_settings">Настройки</string>
     <string name="section_format">Hello World from section: %1$d</string>
     <string name="new_calc_tab_name">Новый расчет</string>
