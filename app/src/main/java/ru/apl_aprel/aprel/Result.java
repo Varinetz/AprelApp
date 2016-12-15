@@ -1,21 +1,26 @@
 package ru.apl_aprel.aprel;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PointF;
+import android.os.StrictMode;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Base64;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.AxisBase;
@@ -30,6 +35,13 @@ import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.github.mikephil.charting.utils.ViewPortHandler;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -164,6 +176,43 @@ public class Result extends AppCompatActivity {
         }
 
         return crosses;
+    }
+
+
+    private StringBuffer HTTPrequest(String urlString) {
+        // TODO Auto-generated method stub
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
+
+        StringBuffer chaine = new StringBuffer("");
+        try{
+            URL url = new URL(urlString);
+            HttpURLConnection connection = (HttpURLConnection)url.openConnection();
+            connection.setRequestProperty("User-Agent", "");
+            connection.setRequestMethod("POST");
+            connection.setDoInput(true);
+            connection.connect();
+
+            InputStream inputStream = connection.getInputStream();
+
+            BufferedReader rd = new BufferedReader(new InputStreamReader(inputStream));
+            String line = "";
+            while ((line = rd.readLine()) != null) {
+                chaine.append(line);
+            }
+        }
+        catch (IOException e) {
+            // Writing exception to log
+            e.printStackTrace();
+        }
+        return chaine;
+    }
+
+    public static String encodeToBase64(Bitmap image, Bitmap.CompressFormat compressFormat, int quality)
+    {
+        ByteArrayOutputStream byteArrayOS = new ByteArrayOutputStream();
+        image.compress(compressFormat, quality, byteArrayOS);
+        return Base64.encodeToString(byteArrayOS.toByteArray(), Base64.DEFAULT);
     }
 
     @Override
@@ -401,6 +450,7 @@ public class Result extends AppCompatActivity {
 //        testTextArea.append("\n Воля: " + Arrays.toString(willChartVal.toArray()));
 
         LineChart chart = (LineChart) findViewById(R.id.chartGraph);
+        LineChart chartHidden = (LineChart) findViewById(R.id.chartGraphHidden);
 
         List<Entry> faithPoints = new ArrayList<>();
         List<Entry> willPoints = new ArrayList<>();
@@ -463,6 +513,21 @@ public class Result extends AppCompatActivity {
         intersectDataSet.enableDashedLine(0f, 400f, 0f);
         intersectDataSet.setValueFormatter(intersectionsValueFormatter);
 
+
+        // Дублируем пересечения для скрытого графика
+        LineDataSet intersectDataSetHidden = new LineDataSet(intersectPoints, "Пересечения"); // add entries to dataset
+        intersectDataSetHidden.setColor(ContextCompat.getColor(getBaseContext(), R.color.colorInrsctPoint));
+        intersectDataSetHidden.setValueTextColor(Color.BLACK);
+        intersectDataSetHidden.setValueTextSize(16f);
+        // intersectDataSetHidden.setDrawValues(false);
+        intersectDataSetHidden.setCircleColor(ContextCompat.getColor(getBaseContext(), R.color.colorInrsctPoint));
+        intersectDataSetHidden.setCircleColorHole(R.color.colorInrsctPoint);
+        intersectDataSetHidden.setCircleRadius(6f);
+        intersectDataSetHidden.setCircleHoleRadius(3f);
+        intersectDataSetHidden.setLineWidth(0f);
+        intersectDataSetHidden.enableDashedLine(0f, 400f, 0f);
+        intersectDataSetHidden.setValueFormatter(intersectionsValueFormatter);
+
         LineDataSet todayDataSet = new LineDataSet(todayPoints, "Сегодня"); // add entries to dataset
         todayDataSet.setColor(ContextCompat.getColor(getBaseContext(), R.color.colorTodayLine));
         todayDataSet.setDrawValues(false);
@@ -475,7 +540,16 @@ public class Result extends AppCompatActivity {
         dataSets.add(intersectDataSet);
         dataSets.add(todayDataSet);
 
+        // Дублируем данные для скрытого графика
+        List<ILineDataSet> dataSetsHidden = new ArrayList<>();
+        dataSetsHidden.add(faithDataSet);
+        dataSetsHidden.add(willDataSet);
+        dataSetsHidden.add(intersectDataSetHidden);
+        dataSetsHidden.add(todayDataSet);
+
         LineData FinalChart = new LineData(dataSets);
+
+        LineData FinalChartHidden = new LineData(dataSetsHidden);
 
         chart.setData(FinalChart);
         chart.setDescription("");
@@ -494,7 +568,6 @@ public class Result extends AppCompatActivity {
         rightAxis.setEnabled(true);
         rightAxis.setDrawLabels(false);
         rightAxis.setDrawGridLines(false);
-
 
         AxisValueFormatter xAxisFormatter = new AxisValueFormatter() {
 
@@ -523,25 +596,69 @@ public class Result extends AppCompatActivity {
         // Легенда
 
         Legend l = chart.getLegend();
-        l.setEnabled(false); // set the size of the legend forms/shapes
-//        l.setFormSize(8f); // set the size of the legend forms/shapes
-//        l.setForm(Legend.LegendForm.CIRCLE); // set what type of form/shape should be used
-//        l.setPosition(Legend.LegendPosition.ABOVE_CHART_CENTER);
-//        l.setTextSize(11f);
-//        l.setTextColor(Color.WHITE);
-//        l.setXEntrySpace(12f); // set the space between the legend entries on the x-axis
-//        l.setYEntrySpace(2f); // set the space between the legend entries on the y-axis
-        //l.setWordWrapEnabled(true);
+        l.setEnabled(false);
 
         chart.invalidate();
 
+
+
+
+        // Hidden chart
+        chartHidden.setData(FinalChartHidden);
+        chartHidden.setDescription("");
+        chartHidden.setTouchEnabled(false);
+
+        YAxis leftAxisHidden = chartHidden.getAxisLeft();
+        leftAxisHidden.setTextColor(Color.BLACK);
+        leftAxisHidden.setTextSize(12f);
+        leftAxisHidden.setGranularity(1f);
+        leftAxisHidden.setAxisMaxValue(9);
+        leftAxisHidden.setAxisMinValue(0);
+        leftAxisHidden.setGranularityEnabled(true);
+        leftAxisHidden.setLabelCount(10, true); // force 6 labels
+
+        YAxis rightAxisHidden = chartHidden.getAxisRight();
+        rightAxisHidden.setEnabled(true);
+        rightAxisHidden.setDrawLabels(false);
+        rightAxisHidden.setDrawGridLines(false);
+
+        XAxis bttmAxisHidden = chartHidden.getXAxis();
+        bttmAxisHidden.setTextColor(Color.BLACK);
+        bttmAxisHidden.setTextSize(12f);
+        bttmAxisHidden.setGranularity(12f);
+        bttmAxisHidden.setPosition(XAxis.XAxisPosition.BOTTOM);
+        bttmAxisHidden.setAvoidFirstLastClipping(true);
+        bttmAxisHidden.setValueFormatter(xAxisFormatter);
+
+        Legend lHidden = chartHidden.getLegend();
+        lHidden.setEnabled(false);
+
+        chartHidden.invalidate();
+
+
         // Отключаем кнопку отправки пока функция не готова
         Button result_send = (Button) findViewById(R.id.result_send);
-        result_send.setEnabled(false);
-        result_send.setBackgroundResource(R.drawable.disabled_button);
-        result_send.setTextColor(getResources().getColor(R.color.colorPrimary400));
-        // Сохраняем данные
+//        result_send.setEnabled(false);
+//        result_send.setBackgroundResource(R.drawable.disabled_button);
+//        result_send.setTextColor(getResources().getColor(R.color.colorPrimary400));
+        result_send.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                LineChart chart = (LineChart) findViewById(R.id.chartGraphHidden);
+                Bitmap chartImg = chart.getChartBitmap();
+                String chartImgToSend = encodeToBase64(chartImg, Bitmap.CompressFormat.JPEG, 100);
+//                Шлем POST запрос
 
+//                String urlString = "http://varinetz.ru/";
+                Context ctx = getApplicationContext();
+//                Toast.makeText(ctx, HTTPrequest(urlString), Toast.LENGTH_LONG).show();
+                Toast.makeText(ctx, chartImgToSend, Toast.LENGTH_LONG).show();
+            }
+        });
+
+
+
+
+        // Сохраняем данные
         Button result_save = (Button) findViewById(R.id.result_save);
 
         if (!correct_form || fromSaved) {
@@ -551,24 +668,24 @@ public class Result extends AppCompatActivity {
         } else {
             result_save.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View view) {
-                DbHelper dbOpenHelper = new DbHelper(Result.this);
-                SQLiteDatabase db = dbOpenHelper.getWritableDatabase();
-                ContentValues cv = new ContentValues();
-                cv.put(DbHelper.NAME, result_name);
-                cv.put(DbHelper.SURNAME, result_surname);
-                cv.put(DbHelper.OCCUPATION, result_occupation);
-                cv.put(DbHelper.DAY, result_day);
-                cv.put(DbHelper.MONTH, result_month);
-                cv.put(DbHelper.YEAR, result_year);
+                    DbHelper dbOpenHelper = new DbHelper(Result.this);
+                    SQLiteDatabase db = dbOpenHelper.getWritableDatabase();
+                    ContentValues cv = new ContentValues();
+                    cv.put(DbHelper.NAME, result_name);
+                    cv.put(DbHelper.SURNAME, result_surname);
+                    cv.put(DbHelper.OCCUPATION, result_occupation);
+                    cv.put(DbHelper.DAY, result_day);
+                    cv.put(DbHelper.MONTH, result_month);
+                    cv.put(DbHelper.YEAR, result_year);
 
-                db.insert(DbHelper.TABLE_NAME,null,cv);
+                    db.insert(DbHelper.TABLE_NAME,null,cv);
 
-                String searchQuery = "SELECT * FROM " + DbHelper.TABLE_NAME;
-                Cursor cursor = db.rawQuery(searchQuery, null);
+                    String searchQuery = "SELECT * FROM " + DbHelper.TABLE_NAME;
+                    Cursor cursor = db.rawQuery(searchQuery, null);
 
-                savedIntent.putExtra("tabToOpen", 1);
-                startActivity(savedIntent);
-                cursor.close();
+                    savedIntent.putExtra("tabToOpen", 1);
+                    startActivity(savedIntent);
+                    cursor.close();
                 db.close();
                 }
             });

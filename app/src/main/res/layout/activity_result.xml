@@ -24,6 +24,14 @@
 
     </android.support.design.widget.AppBarLayout>
 
+
+    <com.github.mikephil.charting.charts.LineChart
+        android:id="@+id/chartGraphHidden"
+        android:layout_width="600px"
+        android:layout_height="600px"
+        android:background="@android:color/white"
+        android:layout_marginTop="2000dp"/>
+
     <ScrollView
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
