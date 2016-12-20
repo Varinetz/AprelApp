@@ -1,22 +1,27 @@
 package ru.apl_aprel.aprel;
 
+import android.app.AlertDialog;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PointF;
+import android.net.Uri;
 import android.os.StrictMode;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.text.InputType;
 import android.util.Base64;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -36,10 +41,13 @@ import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.github.mikephil.charting.utils.ViewPortHandler;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.ParseException;
@@ -48,7 +56,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Result extends AppCompatActivity {
     /* Menu */
@@ -62,6 +74,27 @@ public class Result extends AppCompatActivity {
         }
 
         return strSum;
+    }
+
+    public boolean isEmailValid(String email)
+    {
+        String regExpn =
+                "^(([\\w-]+\\.)+[\\w-]+|([a-zA-Z]{1}|[\\w-]{2,}))@"
+                        +"((([0-1]?[0-9]{1,2}|25[0-5]|2[0-4][0-9])\\.([0-1]?"
+                        +"[0-9]{1,2}|25[0-5]|2[0-4][0-9])\\."
+                        +"([0-1]?[0-9]{1,2}|25[0-5]|2[0-4][0-9])\\.([0-1]?"
+                        +"[0-9]{1,2}|25[0-5]|2[0-4][0-9])){1}|"
+                        +"([a-zA-Z]+[\\w-]+\\.)+[a-zA-Z]{2,4})$";
+
+        CharSequence inputStr = email;
+
+        Pattern pattern = Pattern.compile(regExpn, Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(inputStr);
+
+        if(matcher.matches())
+            return true;
+        else
+            return false;
     }
 
     private ArrayList fillChart(int day, int month, int year, boolean replaceZeros) {
@@ -179,7 +212,7 @@ public class Result extends AppCompatActivity {
     }
 
 
-    private StringBuffer HTTPrequest(String urlString) {
+    private StringBuffer HTTPrequest(String urlString, HashMap<String, String> params) {
         // TODO Auto-generated method stub
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
@@ -189,8 +222,32 @@ public class Result extends AppCompatActivity {
             URL url = new URL(urlString);
             HttpURLConnection connection = (HttpURLConnection)url.openConnection();
             connection.setRequestProperty("User-Agent", "");
+            connection.setReadTimeout(10000);
+            connection.setConnectTimeout(15000);
             connection.setRequestMethod("POST");
             connection.setDoInput(true);
+            connection.setDoOutput(true);
+
+            Uri.Builder builder = new Uri.Builder();
+
+            for(Map.Entry<String, String> param : params.entrySet()) {
+                String key = param.getKey();
+                String value = param.getValue();
+
+                builder.appendQueryParameter(key, value);
+            }
+
+
+            String query = builder.build().getEncodedQuery();
+
+            OutputStream os = connection.getOutputStream();
+            BufferedWriter writer = new BufferedWriter(
+                    new OutputStreamWriter(os, "UTF-8"));
+            writer.write(query);
+            writer.flush();
+            writer.close();
+            os.close();
+
             connection.connect();
 
             InputStream inputStream = connection.getInputStream();
@@ -551,6 +608,7 @@ public class Result extends AppCompatActivity {
 
         LineData FinalChartHidden = new LineData(dataSetsHidden);
 
+        chart.setExtraOffsets(0, 45, 0, 15);
         chart.setData(FinalChart);
         chart.setDescription("");
         chart.setTouchEnabled(false);
@@ -594,12 +652,10 @@ public class Result extends AppCompatActivity {
         bttmAxis.setValueFormatter(xAxisFormatter);
 
         // Легенда
-
         Legend l = chart.getLegend();
         l.setEnabled(false);
 
         chart.invalidate();
-
 
 
 
@@ -645,13 +701,52 @@ public class Result extends AppCompatActivity {
             public void onClick(View view) {
                 LineChart chart = (LineChart) findViewById(R.id.chartGraphHidden);
                 Bitmap chartImg = chart.getChartBitmap();
-                String chartImgToSend = encodeToBase64(chartImg, Bitmap.CompressFormat.JPEG, 100);
+                final String chartImgToSend = encodeToBase64(chartImg, Bitmap.CompressFormat.JPEG, 90);
 //                Шлем POST запрос
 
-//                String urlString = "http://varinetz.ru/";
-                Context ctx = getApplicationContext();
-//                Toast.makeText(ctx, HTTPrequest(urlString), Toast.LENGTH_LONG).show();
-                Toast.makeText(ctx, chartImgToSend, Toast.LENGTH_LONG).show();
+                final Context ctx = getApplicationContext();
+                final String urlString = "http://varinetz.ru/aprel_app_test.php";
+                //Toast.makeText(ctx, chartImgToSend, Toast.LENGTH_LONG).show();
+
+
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(Result.this);
+                builder.setTitle("Title");
+
+// Set up the input
+                final EditText input = new EditText(ctx);
+// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+                input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
+                builder.setView(input);
+
+// Set up the buttons
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String m_Text = input.getText().toString();
+
+                        HashMap<String, String> requestParams = new HashMap<>();
+                        requestParams.put("name", m_Text);
+                        requestParams.put("img", chartImgToSend);
+                        Toast.makeText(ctx, HTTPrequest(urlString, requestParams), Toast.LENGTH_LONG).show();
+                    }
+                });
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+
+                builder.show();
+
+
+
+
+
+
+
+
             }
         });
 
