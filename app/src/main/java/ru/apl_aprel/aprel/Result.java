@@ -743,7 +743,6 @@ public class Result extends AppCompatActivity {
 
                         HashMap<String, String> requestParams = new HashMap<>();
                         requestParams.put("email", m_Text);
-                        requestParams.put("name", result_name + " " + result_surname);
                         requestParams.put("date", dateToFormatStr);
                         requestParams.put("img", chartImgToSend);
                         requestParams.put("final_digit", magicFinalDigitStr);
