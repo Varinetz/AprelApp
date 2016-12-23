@@ -1,6 +1,6 @@
 package ru.apl_aprel.aprel;
 
-import android.app.AlertDialog;
+import android.support.v7.app.AlertDialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -16,12 +16,14 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
 import android.util.Base64;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -309,12 +311,12 @@ public class Result extends AppCompatActivity {
 
         // Дату в строку
 
-        String dateToStr =
+        final String dateToStr =
                 String.format("%02d", result_day) +
                 String.format("%02d", result_month) +
                 String.format("%04d", result_year);
 
-        String dateToFormatStr =
+        final String dateToFormatStr =
                 String.format("%02d", result_day) + "." +
                 String.format("%02d", result_month) + "." +
                 String.format("%04d", result_year);
@@ -356,7 +358,7 @@ public class Result extends AppCompatActivity {
                 magicSumD +
                 Math.abs(magicConst);
 
-        String[] matrix = new String[10];
+        final String[] matrix = new String[10];
         Arrays.fill(matrix, "");
 
         for(int i = 0; i < magicFinalStr.length(); i++) {
@@ -413,18 +415,20 @@ public class Result extends AppCompatActivity {
             magicFinalDigit = getSumOfStrChars(String.valueOf(magicFinalDigit));
         }
 
+        final String magicFinalDigitStr = String.valueOf(magicFinalDigit);
+
         // Итогговая цифра
         final TextView table_final_digit = (TextView) findViewById(R.id.table_final_digit);
-        table_final_digit.setText(String.valueOf(magicFinalDigit));
+        table_final_digit.setText(magicFinalDigitStr);
 
 
         // Мужские и женские цифры
-        int manDigit =
+        final int manDigit =
                 matrix[2].length() +
                 matrix[4].length() +
                 matrix[6].length() +
                 matrix[8].length();
-        int womanDigit =
+        final int womanDigit =
                 matrix[1].length() +
                 matrix[3].length() +
                 matrix[5].length() +
@@ -454,6 +458,7 @@ public class Result extends AppCompatActivity {
         }
 
         ArrayList<PointF> crossPoints = findChartIntersect(willChartVal, faithChartVal, yearsForChart);
+        final ArrayList<String> crossPointsString = new ArrayList<>();
 
         TextView intrsctnTableTitle = (TextView) findViewById(R.id.intersectionsTableTitle);
         intrsctnTableTitle.setText("Точки пересечения");
@@ -491,10 +496,14 @@ public class Result extends AppCompatActivity {
                 calendar.add(Calendar.DATE, (int) daysToAdd);
 
                 String outputDate = sdf.format(calendar.getTime());
-                date.setText(outputDate);
 
+                date.setText(outputDate);
                 age.setText(String.valueOf(yearsToAdd));
+
                 intrsctnTable.addView(intrsctnRow);
+
+                // Добавляем пару дата/возраст в массив
+                crossPointsString.add(outputDate + "-" + String.valueOf(yearsToAdd));
             }
         }
 
@@ -662,6 +671,7 @@ public class Result extends AppCompatActivity {
         // Hidden chart
         chartHidden.setData(FinalChartHidden);
         chartHidden.setDescription("");
+        chartHidden.setExtraOffsets(0, 45, 0, 15);
         chartHidden.setTouchEnabled(false);
 
         YAxis leftAxisHidden = chartHidden.getAxisLeft();
@@ -705,33 +715,53 @@ public class Result extends AppCompatActivity {
 //                Шлем POST запрос
 
                 final Context ctx = getApplicationContext();
-                final String urlString = "http://varinetz.ru/aprel_app_test.php";
+                final String urlString = "http://apl-aprel.ru/aprel_app_mailer.php";
                 //Toast.makeText(ctx, chartImgToSend, Toast.LENGTH_LONG).show();
 
-
-
                 AlertDialog.Builder builder = new AlertDialog.Builder(Result.this);
-                builder.setTitle("Title");
+                builder.setTitle("Отправка отчета")
+                .setMessage("Введите адрес Email")
+                .setIcon(R.drawable.ic_send_white_24dp);
 
 // Set up the input
                 final EditText input = new EditText(ctx);
+                LinearLayout layout = new LinearLayout(ctx);
+                layout.setOrientation(LinearLayout.VERTICAL);
+                layout.setPadding(40, 10, 40, 10);
+                layout.setLayoutParams(new LinearLayoutCompat.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, LinearLayoutCompat.LayoutParams.FILL_PARENT));
+                layout.addView(input);
+
 // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
                 input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
-                builder.setView(input);
+                builder.setView(layout);
 
 // Set up the buttons
-                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                builder.setPositiveButton("Отправить", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         String m_Text = input.getText().toString();
 
                         HashMap<String, String> requestParams = new HashMap<>();
-                        requestParams.put("name", m_Text);
+                        requestParams.put("email", m_Text);
+                        requestParams.put("name", result_name + " " + result_surname);
+                        requestParams.put("date", dateToFormatStr);
                         requestParams.put("img", chartImgToSend);
+                        requestParams.put("final_digit", magicFinalDigitStr);
+                        requestParams.put("man_digit", String.valueOf(manDigit));
+                        requestParams.put("woman_digit", String.valueOf(womanDigit));
+
+                        for(int i = 0; i < crossPointsString.size(); i++) {
+                            requestParams.put("intersections[" + i + "]", crossPointsString.get(i));
+                        }
+
+                        for(int i = 0; i < matrix.length; i++) {
+                            requestParams.put("matrix[" + i + "]", matrix[i]);
+                        }
+
                         Toast.makeText(ctx, HTTPrequest(urlString, requestParams), Toast.LENGTH_LONG).show();
                     }
                 });
-                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                builder.setNegativeButton("Отмена", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.cancel();
@@ -739,18 +769,8 @@ public class Result extends AppCompatActivity {
                 });
 
                 builder.show();
-
-
-
-
-
-
-
-
             }
         });
-
-
 
 
         // Сохраняем данные
