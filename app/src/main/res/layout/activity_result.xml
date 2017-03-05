@@ -336,6 +336,16 @@
                 <TableRow>
                     <TextView
                         style="@style/AppTheme.Table.Key"
+                        android:text="@string/age"/>
+                    <TextView
+                        style="@style/AppTheme.Table.Val"
+                        android:id="@+id/table_age_today_digit"
+                        android:gravity="right"/>
+                </TableRow>
+
+                <TableRow>
+                    <TextView
+                        style="@style/AppTheme.Table.Key"
                         android:text="@string/man_digit"/>
                     <TextView
                         style="@style/AppTheme.Table.Val"

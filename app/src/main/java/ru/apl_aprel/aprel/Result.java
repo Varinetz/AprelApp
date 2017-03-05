@@ -42,6 +42,12 @@ import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.github.mikephil.charting.utils.ViewPortHandler;
 
+import net.danlew.android.joda.JodaTimeAndroid;
+
+import org.joda.time.LocalDate;
+import org.joda.time.Period;
+import org.joda.time.PeriodType;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
@@ -213,7 +219,6 @@ public class Result extends AppCompatActivity {
         return crosses;
     }
 
-
     private StringBuffer HTTPrequest(String urlString, HashMap<String, String> params) {
         // TODO Auto-generated method stub
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
@@ -274,6 +279,12 @@ public class Result extends AppCompatActivity {
         return Base64.encodeToString(byteArrayOS.toByteArray(), Base64.DEFAULT);
     }
 
+    private static String getAge(LocalDate date) {
+        LocalDate now = new LocalDate();
+        Period period = new Period(date, now, PeriodType.yearMonthDay());
+        return Integer.toString(period.getYears());
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -285,6 +296,12 @@ public class Result extends AppCompatActivity {
         final int result_year = getIntent().getIntExtra("result_year", 0);
         final boolean correct_form = getIntent().getBooleanExtra("correct_form", false);
         final boolean fromSaved = getIntent().getBooleanExtra("from", false);
+
+        // init joda time lib
+        JodaTimeAndroid.init(this);
+
+        Calendar now = Calendar.getInstance();
+        int currYear = now.get(Calendar.YEAR);
 
         // from NewCalc
         if (correct_form) {
@@ -363,38 +380,9 @@ public class Result extends AppCompatActivity {
 
         for(int i = 0; i < magicFinalStr.length(); i++) {
             char curChar =  magicFinalStr.charAt(i);
-            switch (curChar) {
-                case '0':
-                    matrix[0] += curChar;
-                    break;
-                case '1':
-                    matrix[1] += curChar;
-                    break;
-                case '2':
-                    matrix[2] += curChar;
-                    break;
-                case '3':
-                    matrix[3] += curChar;
-                    break;
-                case '4':
-                    matrix[4] += curChar;
-                    break;
-                case '5':
-                    matrix[5] += curChar;
-                    break;
-                case '6':
-                    matrix[6] += curChar;
-                    break;
-                case '7':
-                    matrix[7] += curChar;
-                    break;
-                case '8':
-                    matrix[8] += curChar;
-                    break;
-                case '9':
-                    matrix[9] += curChar;
-                    break;
-            }
+            int curCharInt = Character.getNumericValue(curChar);
+
+            matrix[curCharInt] += curChar;
         }
 
         for (int i = 1; i < matrix.length; i++) {
@@ -414,12 +402,15 @@ public class Result extends AppCompatActivity {
         while(magicFinalDigit >= 10) {
             magicFinalDigit = getSumOfStrChars(String.valueOf(magicFinalDigit));
         }
-
         final String magicFinalDigitStr = String.valueOf(magicFinalDigit);
-
-        // Итогговая цифра
         final TextView table_final_digit = (TextView) findViewById(R.id.table_final_digit);
         table_final_digit.setText(magicFinalDigitStr);
+
+
+        // Возраст сегодня
+        LocalDate ageToday = new LocalDate(result_year, result_month, result_day);
+        final TextView table_age_today_digit = (TextView) findViewById(R.id.table_age_today_digit);
+        table_age_today_digit.setText(getAge(ageToday));
 
 
         // Мужские и женские цифры
@@ -439,7 +430,7 @@ public class Result extends AppCompatActivity {
         final TextView table_man_digit = (TextView) findViewById(R.id.table_man_digit);
         table_man_digit.setText(String.valueOf(manDigit));
 
-        // Мженские цифры
+        // Женские цифры
         final TextView table_woman_digit = (TextView) findViewById(R.id.table_woman_digit);
         table_woman_digit.setText(String.valueOf(womanDigit));
 
@@ -538,7 +529,6 @@ public class Result extends AppCompatActivity {
         }
 
         // Готовим линию сегодня
-        int currYear = Calendar.getInstance().get(Calendar.YEAR);
         float todayX = currYear - result_year;
         todayPoints.add(new Entry(todayX, 0f));
         todayPoints.add(new Entry(todayX, 9f));
